@@ -1,0 +1,147 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: calc(0.6rem + var(--safe-top)) 1.5rem 0.6rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  @media (max-width: 800px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  nav {
+    flex: 1;
+  }
+}
+
+/* Logo + nombre de la empresa (tabla companies) */
+.brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  color: var(--text);
+
+  /* Móvil: no hay menú arriba, el nombre ocupa hasta el botón Salir. */
+  @media (max-width: 800px) {
+    flex: 1;
+  }
+  text-decoration: none;
+
+  img {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+}
+
+.brand-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 1.1rem;
+
+  /* Escritorio estrecho (tablet, media pantalla): solo el logo, para que quepa el menú. */
+  @media (min-width: 801px) and (max-width: 1100px) {
+    display: none;
+  }
+}
+
+nav {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+
+  a {
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    color: var(--muted);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--text);
+    }
+
+    &.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+  }
+}
+
+/* Barra de pestañas inferior, solo en móvil */
+.tabbar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  height: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+
+  @media (max-width: 800px) {
+    display: flex;
+  }
+
+  a,
+  button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    &.active {
+      background: transparent;
+    }
+  }
+}
+
+/* Diálogo de confirmación */
+.confirm {
+  max-width: 400px;
+
+  p {
+    margin: 0.25rem 0 1rem;
+    font-size: 1.05rem;
+    text-align: center;
+  }
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+
+  .btn {
+    min-height: 48px;
+  }
+}

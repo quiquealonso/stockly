@@ -1,0 +1,97 @@
+/* Pedidos favoritos: tarjetas grandes, fáciles de tocar */
+.orders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.5rem;
+
+  .empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 1.25rem 1rem;
+  }
+}
+
+.order {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-height: 72px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-left: 4px solid var(--accent);
+
+  &:hover {
+    background: var(--hover);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Diálogos */
+.order-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  p {
+    margin: 0;
+  }
+}
+
+.lines {
+  margin-top: 0.5rem;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.line-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  .name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.line-qty {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  input {
+    width: 84px;
+    text-align: center;
+    font-weight: 600;
+  }
+  span {
+    width: 2.2rem;
+  }
+}
+
+.sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+
+  .btn {
+    min-height: 52px;
+  }
+}

@@ -1,0 +1,153 @@
+<div class="page-header detail">
+  <div class="title">
+    <h1>{{ supplier()?.name ?? 'Proveedor' }}</h1>
+    @if (supplier()?.phone; as phone) {
+      <p class="small"><a [href]="'tel:' + phone">📞 {{ phone }}</a></p>
+    }
+    @if (supplier()?.notes; as notes) {
+      <p class="muted small">{{ notes }}</p>
+    }
+  </div>
+  <div class="header-actions">
+    <a class="btn small" routerLink="/proveedores">← Volver</a>
+    <button class="btn small" [disabled]="!supplier()" (click)="startEdit()">Editar</button>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<section class="block">
+  <div class="block-head">
+    <h2>Pedidos favoritos</h2>
+    <a class="btn small primary" [routerLink]="['/proveedores', id(), 'pedidos', 'nuevo']">+ Nuevo</a>
+  </div>
+  <div class="orders">
+    @for (o of orders(); track o.id) {
+      <button class="card order" (click)="showOrder(o)">
+        <span class="strong">★ {{ o.name }}</span>
+        <span class="muted small">{{ o.items.length }} productos</span>
+      </button>
+    } @empty {
+      <p class="card empty">
+        Guarda aquí lo que sueles pedir a este proveedor y repítelo con un toque.
+      </p>
+    }
+  </div>
+</section>
+
+<section class="block">
+  <div class="block-head">
+    <h2>Productos <span class="badge">{{ products().length }}</span></h2>
+    <div class="header-actions">
+      <button class="btn small" (click)="editor.create({ supplierId: supplierId() })">+ Nuevo</button>
+      <button class="btn small" (click)="startAssign()">Asignar</button>
+    </div>
+  </div>
+  <div class="card list-card">
+    <ul class="list">
+      @for (p of products(); track p.id) {
+        <li>
+          <button class="prod" [class.low]="p.lowStock" (click)="editor.edit(p.id)">
+            <span class="name">{{ p.name }}</span>
+            <span class="qty" [class.danger-text]="p.lowStock">
+              {{ p.quantity | number: '1.0-3' }} {{ unitShort[p.unit] }}
+            </span>
+          </button>
+        </li>
+      } @empty {
+        <li class="empty">Sin productos. Pulsa «Asignar» para elegir los que te trae.</li>
+      }
+    </ul>
+  </div>
+</section>
+
+@switch (sheet()) {
+  @case ('edit') {
+    <app-dialog title="Editar proveedor" (closed)="closeSheet()">
+      <form class="form" [formGroup]="form" (ngSubmit)="saveSupplier()">
+        <label>
+          Nombre
+          <input formControlName="name" autocapitalize="words" enterkeyhint="next" />
+        </label>
+        <label>
+          <span>Teléfono <span class="muted small">(opcional)</span></span>
+          <input type="tel" formControlName="phone" inputmode="tel" autocomplete="off" />
+        </label>
+        <label>
+          <span>Notas <span class="muted small">(opcional)</span></span>
+          <textarea formControlName="notes" rows="2"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="button" class="btn" (click)="closeSheet()">Cancelar</button>
+          <button type="submit" class="btn primary" [disabled]="form.invalid || saving()">Guardar</button>
+        </div>
+      </form>
+      <div class="dialog-danger">
+        <button type="button" class="btn danger block" [disabled]="saving()" (click)="removeSupplier()">
+          Borrar proveedor
+        </button>
+        <p class="muted small center">Sus productos se quedan, sin proveedor.</p>
+      </div>
+    </app-dialog>
+  }
+
+  @case ('assign') {
+    <app-dialog [title]="'Productos de ' + (supplier()?.name ?? '')" (closed)="closeSheet()">
+      <app-product-picker
+        filterBy="category"
+        [products]="allProducts()"
+        [selected]="assignSelected()"
+        (toggle)="toggleAssign($event)"
+      />
+      <div class="form-actions sticky-actions">
+        <button class="btn" (click)="closeSheet()">Cancelar</button>
+        <button class="btn primary" [disabled]="saving()" (click)="saveAssign()">
+          Guardar ({{ assignSelected().size }})
+        </button>
+      </div>
+    </app-dialog>
+  }
+
+  @case ('order') {
+    @if (openOrder(); as o) {
+      <app-dialog [title]="'★ ' + o.name" (closed)="closeSheet()">
+        <div class="order-head">
+          <p class="muted small">Ajusta las cantidades de esta vez si hace falta.</p>
+          <a class="btn small" [routerLink]="['/proveedores', id(), 'pedidos', o.id]">Editar pedido</a>
+        </div>
+        <ul class="list lines">
+          @for (l of orderLines(); track l.productId) {
+            <li class="line">
+              <span class="line-info">
+                <span class="name">{{ l.product.name }}</span>
+                <span class="small" [class.muted]="!l.product.lowStock" [class.danger-text]="l.product.lowStock">
+                  Hay {{ l.product.quantity | number: '1.0-3' }} {{ unitShort[l.product.unit] }}
+                </span>
+              </span>
+              <span class="line-qty">
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  [value]="orderQty()[l.productId]"
+                  (input)="setQty(l.productId, $any($event.target).value)"
+                />
+                <span class="muted small">{{ unitShort[l.product.unit] }}</span>
+              </span>
+            </li>
+          } @empty {
+            <li class="empty">Este pedido no tiene productos.</li>
+          }
+        </ul>
+        <div class="sheet-actions sticky-actions">
+          <button class="btn" [disabled]="!orderReady().length" (click)="copyOrder()">Copiar lista</button>
+          <button class="btn ok-solid" [disabled]="!orderReady().length || saving()" (click)="receiveOrder()">
+            Recibido: sumar
+          </button>
+        </div>
+      </app-dialog>
+    }
+  }
+}

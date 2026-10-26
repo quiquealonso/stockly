@@ -1,0 +1,14 @@
+node_modules
+.env
+*.apk
+video/out/
+video/.perfil-navegador/
+video/.sesion-demo.json
+
+# Configuración real de Supabase (URL y clave del proyecto)
+frontend/src/environments/environment.local.ts
+supabase/logo-empresa.png
+# Notas privadas del proyecto (cuentas, emails, datos del cliente)
+CLAUDE.local.md
+# Vídeos sueltos (los publicados van en docs/media en MP4)
+video/*.webm

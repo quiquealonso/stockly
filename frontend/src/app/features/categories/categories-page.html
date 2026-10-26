@@ -1,0 +1,48 @@
+<div class="page-header">
+  <h1>Categorías</h1>
+  <button class="btn primary" (click)="openNew()">+ Nueva</button>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<section class="card cat-list">
+  <ul class="list">
+    @for (c of categories(); track c.id) {
+      <li>
+        <a class="cat" [routerLink]="['/categorias', c.id]">
+          <span class="cat-info">
+            <span class="strong">{{ c.name }}</span>
+            @if (c.description) {
+              <span class="muted small">{{ c.description }}</span>
+            }
+          </span>
+          <span class="badge">{{ c.productCount }} prod.</span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </a>
+      </li>
+    } @empty {
+      <li class="empty">{{ loading() ? 'Cargando…' : 'Todavía no hay categorías.' }}</li>
+    }
+  </ul>
+</section>
+
+@if (dialogOpen()) {
+  <app-dialog title="Nueva categoría" (closed)="dialogOpen.set(false)">
+    <form class="form" [formGroup]="form" (ngSubmit)="save()">
+      <label>
+        Nombre
+        <input formControlName="name" placeholder="Ej. Bebidas" autocapitalize="sentences" enterkeyhint="done" />
+      </label>
+      <label>
+        <span>Descripción <span class="muted small">(opcional)</span></span>
+        <textarea formControlName="description" rows="2"></textarea>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="btn" (click)="dialogOpen.set(false)">Cancelar</button>
+        <button type="submit" class="btn primary" [disabled]="form.invalid || saving()">Añadir</button>
+      </div>
+    </form>
+  </app-dialog>
+}

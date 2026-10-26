@@ -1,0 +1,123 @@
+<div class="page-header detail">
+  <div class="title">
+    <h1>{{ event()?.name ?? 'Evento' }}</h1>
+    @if (event(); as e) {
+      <p class="muted small">
+        {{ e.eventDate | date: 'EEEE d MMMM y' }}
+        @if (e.guests) {
+          · <strong>{{ e.guests }} comensales</strong>
+        }
+      </p>
+      @if (e.notes) {
+        <p class="muted small">{{ e.notes }}</p>
+      }
+    }
+  </div>
+  <div class="header-actions">
+    <a class="btn small" routerLink="/eventos">← Volver</a>
+    <button class="btn small" [disabled]="!event()" (click)="startEdit()">Editar</button>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+@if (event(); as e) {
+  <!-- Estado: pendiente de descontar / descontado -->
+  @if (e.appliedAt) {
+    <div class="status card done">
+      <strong>✓ Descontado del stock</strong>
+      <span class="muted small">
+        {{ e.appliedAt | date: 'd/MM/yy HH:mm' }} · {{ who(e.appliedBy) }}. El consumo ya no se puede cambiar;
+        si hubo un error, corrígelo con un ajuste en Stock.
+      </span>
+    </div>
+  } @else {
+    <div class="status card">
+      <div>
+        <strong>Pendiente de descontar</strong>
+        <p class="muted small">
+          Apunta lo consumido y, cuando esté bien, descuéntalo del stock.
+          @if (shortCount()) {
+            <span class="danger-text">{{ shortCount() }} sin stock suficiente.</span>
+          }
+        </p>
+      </div>
+      <button class="btn danger-solid" [disabled]="saving() || !e.items.length" (click)="consume()">
+        Descontar del stock
+      </button>
+    </div>
+  }
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Consumo <span class="badge">{{ e.items.length }}</span></h2>
+      @if (!e.appliedAt) {
+        <a class="btn small primary" [routerLink]="['/eventos', e.id, 'consumo']">
+          {{ e.items.length ? 'Editar consumo' : 'Apuntar consumo' }}
+        </a>
+      }
+    </div>
+    <div class="card list-card">
+      <ul class="list">
+        @for (i of e.items; track i.productId) {
+          <li class="line" [class.short]="!e.appliedAt && i.product && i.product.quantity < i.quantity">
+            <span class="prod-info">
+              <span class="name">{{ i.product?.name }}</span>
+              <span class="muted small">
+                @if (perGuest(i.quantity); as pg) {
+                  {{ pg | number: '1.0-2' }} {{ i.product ? unitShort[i.product.unit] : '' }} por comensal
+                }
+                @if (!e.appliedAt && i.product) {
+                  @if (perGuest(i.quantity)) { · }
+                  hay {{ i.product.quantity | number: '1.0-3' }}
+                }
+              </span>
+            </span>
+            <span class="qty">
+              −{{ i.quantity | number: '1.0-3' }}
+              <small>{{ i.product ? unitShort[i.product.unit] : '' }}</small>
+            </span>
+          </li>
+        } @empty {
+          <li class="empty">Todavía no hay consumo apuntado.</li>
+        }
+      </ul>
+    </div>
+  </section>
+}
+
+@if (editOpen()) {
+  <app-dialog title="Editar evento" (closed)="editOpen.set(false)">
+    <form class="form" [formGroup]="form" (ngSubmit)="saveEvent()">
+      <label>
+        Nombre
+        <input formControlName="name" autocapitalize="sentences" enterkeyhint="next" />
+      </label>
+      <div class="row">
+        <label>
+          Fecha
+          <input type="date" formControlName="eventDate" />
+        </label>
+        <label>
+          <span>Comensales <span class="muted small">(opcional)</span></span>
+          <input type="number" inputmode="numeric" min="0" step="1" formControlName="guests" />
+        </label>
+      </div>
+      <label>
+        <span>Notas <span class="muted small">(opcional)</span></span>
+        <textarea formControlName="notes" rows="2"></textarea>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="btn" (click)="editOpen.set(false)">Cancelar</button>
+        <button type="submit" class="btn primary" [disabled]="saving()">Guardar</button>
+      </div>
+    </form>
+    <div class="dialog-danger">
+      <button type="button" class="btn danger block" [disabled]="saving()" (click)="removeEvent()">
+        Borrar evento
+      </button>
+    </div>
+  </app-dialog>
+}

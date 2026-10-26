@@ -1,0 +1,157 @@
+<div class="page-header">
+  <div>
+    <h1>Stock</h1>
+    <p class="muted small">
+      {{ products().length }} productos ·
+      <span [class.danger-text]="lowCount() > 0">{{ lowCount() }} bajo mínimos</span>
+    </p>
+  </div>
+  <div class="header-actions">
+    <button class="btn small" title="Recargar" [disabled]="loading()" (click)="load()">↻</button>
+    <button class="btn primary" (click)="editor.create()">+ Nuevo</button>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }} <button class="btn small" (click)="load()">Reintentar</button></div>
+}
+
+<div class="filters">
+  <div class="search-row">
+    <input
+      type="search"
+      placeholder="Buscar producto…"
+      enterkeyhint="search"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <button
+      class="low-toggle"
+      [class.on]="onlyLow()"
+      [attr.aria-pressed]="onlyLow()"
+      (click)="onlyLow.set(!onlyLow())"
+    >
+      Bajo mín. <span class="badge">{{ lowCount() }}</span>
+    </button>
+  </div>
+  <div class="group-row">
+    <span class="muted small">Ver por</span>
+    <div class="segmented" role="group" aria-label="Organizar por">
+      <button [class.on]="groupBy() === 'category'" [attr.aria-pressed]="groupBy() === 'category'" (click)="setGroupBy('category')">
+        Categorías
+      </button>
+      <button [class.on]="groupBy() === 'supplier'" [attr.aria-pressed]="groupBy() === 'supplier'" (click)="setGroupBy('supplier')">
+        Proveedores
+      </button>
+    </div>
+  </div>
+  <div class="chips" appDragScroll>
+    <button class="chip" [class.selected]="selectedGroup() === null" (click)="selectedGroup.set(null)">
+      Todos
+    </button>
+    @if (groupBy() === 'category') {
+      @for (c of categories(); track c.id) {
+        <button class="chip" [class.selected]="selectedGroup() === c.id" (click)="selectedGroup.set(c.id)">
+          {{ c.name }} <span class="badge">{{ countFor(c.id) }}</span>
+        </button>
+      }
+    } @else {
+      @for (s of suppliers(); track s.id) {
+        <button class="chip" [class.selected]="selectedGroup() === s.id" (click)="selectedGroup.set(s.id)">
+          {{ s.name }} <span class="badge">{{ countFor(s.id) }}</span>
+        </button>
+      }
+      @if (countFor(noSupplier)) {
+        <button class="chip" [class.selected]="selectedGroup() === noSupplier" (click)="selectedGroup.set(noSupplier)">
+          Sin proveedor <span class="badge">{{ countFor(noSupplier) }}</span>
+        </button>
+      }
+    }
+  </div>
+</div>
+
+<section class="card list-card">
+  @if (loading() && !products().length) {
+    <p class="empty">Cargando…</p>
+  } @else {
+    <ul class="list">
+      @for (p of visible(); track p.id) {
+        <li class="item" [class.low]="p.lowStock" [class.inactive]="!p.active">
+          <app-product-icon class="icon" [name]="p.name" [unit]="p.unit" (click)="open(p)" />
+          <button class="info" (click)="open(p)">
+            <span class="name">{{ p.name }}</span>
+            <span class="meta">
+              {{ groupBy() === 'supplier' ? (supplierNames(p) || 'Sin proveedor') : p.category?.name }}
+              · mín. {{ p.minStock | number: '1.0-3' }}
+              @if (p.lowStock) {
+                <span class="tag danger">Bajo mínimos</span>
+              }
+              @if (!p.active) {
+                <span class="tag">Inactivo</span>
+              }
+            </span>
+          </button>
+          <div class="stepper">
+            <button class="step" aria-label="Restar 1" [disabled]="busy().has(p.id) || p.quantity < 1" (click)="adjust(p, -1)">−</button>
+            <button class="qty" (click)="open(p)">
+              <strong>{{ p.quantity | number: '1.0-3' }}</strong>
+              <span>{{ unitShort[p.unit] }}</span>
+            </button>
+            <button class="step" aria-label="Sumar 1" [disabled]="busy().has(p.id)" (click)="adjust(p, 1)">+</button>
+          </div>
+        </li>
+      } @empty {
+        <li class="empty">
+          @if (products().length) {
+            No hay productos con estos filtros.
+          } @else if (categories().length) {
+            Todavía no hay productos. <button class="link" (click)="editor.create()">Añade el primero</button>.
+          } @else {
+            Primero <a routerLink="/categorias">crea una categoría</a>.
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+@if (selected(); as p) {
+  <div class="sheet-backdrop" (click)="close()">
+    <div class="sheet" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="sheet-head">
+        <div>
+          <h2>{{ p.name }}</h2>
+          <p class="muted small">{{ p.category?.name }}@if (p.suppliers.length) { · {{ supplierNames(p) }}} · mínimo {{ p.minStock | number: '1.0-3' }} {{ unitShort[p.unit] }}</p>
+        </div>
+        <button class="btn small" (click)="editProduct(p)">Editar</button>
+      </div>
+
+      <p class="current" [class.danger-text]="p.lowStock">
+        {{ p.quantity | number: '1.0-3' }} <span>{{ unitLabels[p.unit] }}</span>
+      </p>
+
+      <label class="amount">
+        Cantidad a mover
+        <input
+          #amount
+          type="text"
+          inputmode="decimal"
+          enterkeyhint="done"
+          placeholder="0"
+          autocomplete="off"
+          (keydown.enter)="adjustFromInput(p, amount, 1)"
+        />
+      </label>
+
+      <div class="sheet-actions">
+        <button class="btn danger-solid" [disabled]="busy().has(p.id)" (click)="adjustFromInput(p, amount, -1)">
+          − Salida
+        </button>
+        <button class="btn ok-solid" [disabled]="busy().has(p.id)" (click)="adjustFromInput(p, amount, 1)">
+          + Entrada
+        </button>
+      </div>
+      <button class="btn block" (click)="close()">Cerrar</button>
+    </div>
+  </div>
+}

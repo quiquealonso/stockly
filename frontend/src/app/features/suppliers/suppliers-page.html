@@ -1,0 +1,51 @@
+<div class="page-header">
+  <h1>Proveedores</h1>
+  <button class="btn primary" (click)="openNew()">+ Nuevo</button>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<section class="card sup-list">
+  <ul class="list">
+    @for (s of suppliers(); track s.id) {
+      <li>
+        <a class="sup" [routerLink]="['/proveedores', s.id]">
+          <span class="sup-info">
+            <span class="strong">{{ s.name }}</span>
+            <span class="muted small">
+              {{ s.productCount }} productos · {{ s.orderCount }} pedidos favoritos
+            </span>
+          </span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </a>
+      </li>
+    } @empty {
+      <li class="empty">{{ loading() ? 'Cargando…' : 'Todavía no hay proveedores.' }}</li>
+    }
+  </ul>
+</section>
+
+@if (dialogOpen()) {
+  <app-dialog title="Nuevo proveedor" (closed)="dialogOpen.set(false)">
+    <form class="form" [formGroup]="form" (ngSubmit)="save()">
+      <label>
+        Nombre
+        <input formControlName="name" placeholder="Ej. Distribuciones García" autocapitalize="words" enterkeyhint="next" />
+      </label>
+      <label>
+        <span>Teléfono <span class="muted small">(opcional)</span></span>
+        <input type="tel" formControlName="phone" inputmode="tel" autocomplete="off" enterkeyhint="next" />
+      </label>
+      <label>
+        <span>Notas <span class="muted small">(opcional)</span></span>
+        <textarea formControlName="notes" rows="2" placeholder="Días de reparto, contacto…"></textarea>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="btn" (click)="dialogOpen.set(false)">Cancelar</button>
+        <button type="submit" class="btn primary" [disabled]="form.invalid || saving()">Añadir</button>
+      </div>
+    </form>
+  </app-dialog>
+}

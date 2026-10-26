@@ -1,0 +1,107 @@
+<div class="page-header">
+  <div>
+    <h1>Control</h1>
+    <p class="muted small">
+      {{ counts().in + counts().out }} movimientos ·
+      <span class="in">{{ counts().in }} entradas</span> ·
+      <span class="out">{{ counts().out }} salidas</span>
+      @if (day()) {
+        · {{ day() | date: 'd/MM/yy' }}
+      }
+    </p>
+  </div>
+  <button class="btn small" title="Recargar" [disabled]="loading()" (click)="load()">↻</button>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }} <button class="btn small" (click)="load()">Reintentar</button></div>
+}
+
+<div class="filters">
+  <div class="search-row">
+    <input
+      type="search"
+      placeholder="Buscar producto…"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </div>
+  <div class="day-row">
+    @if (day()) {
+      <button class="btn" aria-label="Día anterior" (click)="shiftDay(-1)">‹</button>
+    }
+    <label class="day-field" [class.no-day]="!day()">
+      <span class="muted small">{{ day() ? 'Día' : 'Filtrar por día (opcional)' }}</span>
+      <input type="date" aria-label="Filtrar por día" [max]="today" [value]="day()" (change)="setDay($any($event.target).value)" />
+    </label>
+    @if (day()) {
+      <button class="btn" aria-label="Día siguiente" [disabled]="day() >= today" (click)="shiftDay(1)">›</button>
+      <button class="btn small" (click)="setDay('')">Todas</button>
+    }
+  </div>
+  <div class="chips" appDragScroll>
+    <button class="chip" [class.selected]="direction() === 'all'" (click)="setDirection('all')">Todos</button>
+    <button class="chip" [class.selected]="direction() === 'in'" (click)="setDirection('in')">
+      Entradas <span class="badge">{{ counts().in }}</span>
+    </button>
+    <button class="chip" [class.selected]="direction() === 'out'" (click)="setDirection('out')">
+      Salidas <span class="badge">{{ counts().out }}</span>
+    </button>
+  </div>
+</div>
+
+<section class="card list-card" [class.busy]="loading() && movements().length">
+  <ul class="list">
+    @for (m of movements(); track m.id; let i = $index) {
+      @if (newDay(i)) {
+        <li class="day-sep">{{ m.updatedAt | date: 'EEEE d MMMM y' }}</li>
+      }
+      <li class="mov" [class.in]="m.delta > 0" [class.out]="m.delta < 0">
+        <span class="time">
+          @if (isRange(m)) {
+            {{ m.createdAt | date: 'HH:mm' }}–<br />{{ m.updatedAt | date: 'HH:mm' }}
+          } @else {
+            {{ m.updatedAt | date: 'HH:mm' }}
+          }
+        </span>
+        <span class="mov-info">
+          <span class="name">{{ m.productName }}</span>
+          <span class="meta">
+            @if (m.eventId) {
+              <a class="tag event" [routerLink]="['/eventos', m.eventId]">
+                {{ kindLabels[m.kind] }} · {{ m.note }}
+              </a>
+            } @else {
+              <span class="tag" [class.order]="m.kind === 'order'" [class.event]="m.kind === 'event'">
+                {{ kindLabels[m.kind] }}@if (m.note) { · {{ m.note }}}
+              </span>
+            }
+            {{ who(m) }} · queda {{ m.quantityAfter | number: '1.0-3' }}
+          </span>
+        </span>
+        <span class="delta">
+          {{ m.delta > 0 ? '+' : '−' }}{{ (m.delta < 0 ? -m.delta : m.delta) | number: '1.0-3' }}
+          <small>{{ unitShort[m.unit] }}</small>
+        </span>
+      </li>
+    } @empty {
+      <li class="empty">
+        @if (loading()) {
+          Cargando…
+        } @else if (day() || search() || direction() !== 'all') {
+          No hay movimientos con estos filtros.
+        } @else {
+          Todavía no hay movimientos.
+        }
+      </li>
+    }
+  </ul>
+</section>
+
+@if (pages() > 1) {
+  <nav class="pager" aria-label="Páginas">
+    <button class="btn" [disabled]="page() === 0 || loading()" (click)="goTo(page() - 1)">‹ Más recientes</button>
+    <span class="muted small">{{ rangeText() }}</span>
+    <button class="btn" [disabled]="page() >= pages() - 1 || loading()" (click)="goTo(page() + 1)">Más antiguos ›</button>
+  </nav>
+}

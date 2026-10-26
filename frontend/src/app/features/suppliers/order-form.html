@@ -1,0 +1,85 @@
+<div class="page-dialog-backdrop">
+  <div class="page-dialog" role="dialog" aria-modal="true" aria-labelledby="order-title">
+    <header class="page-dialog-head">
+      <div>
+        <h2 id="order-title">{{ orderId() ? 'Editar pedido favorito' : 'Nuevo pedido favorito' }}</h2>
+        <p class="muted small">{{ supplier()?.name }}</p>
+      </div>
+      <a class="dialog-close" aria-label="Cerrar" [routerLink]="['/proveedores', id()]">✕</a>
+    </header>
+
+    <div class="page-dialog-body">
+      @if (error()) {
+        <div class="alert">{{ error() }}</div>
+      }
+
+      <div class="form">
+        <label>
+          Nombre del pedido
+          <input
+            placeholder="Ej. Pedido semanal"
+            autocapitalize="sentences"
+            enterkeyhint="done"
+            maxlength="80"
+            [value]="name()"
+            (input)="name.set($any($event.target).value)"
+          />
+        </label>
+
+        <div>
+          <p class="muted small">
+            Pon la cantidad que sueles pedir de cada producto. Los que dejes vacíos no entran.
+          </p>
+          <label class="check show-all">
+            <input type="checkbox" [checked]="showAll()" (change)="showAll.set(!showAll())" />
+            Mostrar productos de otros proveedores
+          </label>
+          <section class="card lines">
+            <ul class="list">
+              @for (p of candidates(); track p.id) {
+                <li class="line" [class.on]="inOrder(p.id)">
+                  <span class="line-info">
+                    <span class="name">{{ p.name }}</span>
+                    <span class="muted small">{{ p.category?.name }}@if (otherSuppliers(p); as others) { · {{ others }}}</span>
+                  </span>
+                  <span class="line-qty">
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      placeholder="—"
+                      [attr.aria-label]="'Cantidad de ' + p.name"
+                      [value]="qty()[p.id] ?? ''"
+                      (input)="setQty(p.id, $any($event.target).value)"
+                    />
+                    <span class="muted small">{{ unitShort[p.unit] }}</span>
+                  </span>
+                </li>
+              } @empty {
+                <li class="empty">
+                  No hay productos. <button class="link" (click)="editor.create({ supplierId: +id() })">Crea uno</button>.
+                </li>
+              }
+            </ul>
+          </section>
+        </div>
+
+        @if (orderId()) {
+          <div class="dialog-danger">
+            <button class="btn danger block" [disabled]="saving()" (click)="remove()">Borrar pedido favorito</button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <footer class="page-dialog-foot">
+      <span class="muted small"><strong>{{ items().length }}</strong> en el pedido</span>
+      <div class="form-actions">
+        <a class="btn" [routerLink]="['/proveedores', id()]">Cancelar</a>
+        <button class="btn primary" [disabled]="saving()" (click)="save()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

@@ -1,0 +1,153 @@
+<div class="page-header">
+  <h1>Perfil</h1>
+  <button class="btn primary" [disabled]="!company()" (click)="startEdit()">Editar</button>
+</div>
+
+@if (company(); as c) {
+  <section class="card hero">
+    @if (c.logo) {
+      <img class="logo" [src]="c.logo" alt="Logo de la empresa" />
+    } @else {
+      <span class="logo placeholder" aria-hidden="true">{{ c.name.charAt(0) }}</span>
+    }
+    <div class="hero-info">
+      <h2>{{ c.name }}</h2>
+      @if (c.legalName) {
+        <p class="muted small">{{ c.legalName }}</p>
+      }
+    </div>
+  </section>
+
+  <section class="card list-card">
+    <dl class="fields">
+      <div>
+        <dt>CIF / NIF</dt>
+        <dd>{{ c.taxId || '—' }}</dd>
+      </div>
+      <div>
+        <dt>Teléfono</dt>
+        <dd>
+          @if (c.phone) {
+            <a [href]="'tel:' + c.phone">{{ c.phone }}</a>
+          } @else {
+            —
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd>
+          @if (c.email) {
+            <a [href]="'mailto:' + c.email">{{ c.email }}</a>
+          } @else {
+            —
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Dirección</dt>
+        <dd>{{ fullAddress() || '—' }}</dd>
+      </div>
+      <div>
+        <dt>Web</dt>
+        <dd>
+          @if (c.website) {
+            <a [href]="websiteHref(c.website)" target="_blank" rel="noopener">{{ c.website }}</a>
+          } @else {
+            —
+          }
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <p class="muted small session">Sesión iniciada como <strong>{{ userEmail }}</strong></p>
+} @else {
+  <p class="card empty">Cargando…</p>
+}
+
+@if (editOpen()) {
+  <app-dialog title="Editar perfil" (closed)="editOpen.set(false)">
+    <form class="form" [formGroup]="form" (ngSubmit)="save()">
+      <div class="logo-edit">
+        @if (logo(); as l) {
+          <img class="logo" [src]="l" alt="Logo" />
+        } @else {
+          <span class="logo placeholder" aria-hidden="true">?</span>
+        }
+        <div class="logo-actions">
+          <label class="btn small">
+            Cambiar logo
+            <input #file type="file" accept="image/*" hidden (change)="pickLogo(file)" />
+          </label>
+          @if (logo()) {
+            <button type="button" class="btn small danger" (click)="logo.set(null)">Quitar</button>
+          }
+        </div>
+      </div>
+
+      <label>
+        Nombre
+        <input formControlName="name" autocapitalize="words" />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <span class="hint">El nombre es obligatorio</span>
+        }
+      </label>
+      <label>
+        <span>Razón social <span class="muted small">(opcional)</span></span>
+        <input formControlName="legalName" placeholder="Ej. Restaurante La Plaza S.L." />
+      </label>
+      <div class="row">
+        <label>
+          CIF / NIF
+          <input formControlName="taxId" autocapitalize="characters" autocomplete="off" />
+        </label>
+        <label>
+          Teléfono
+          <input type="tel" inputmode="tel" formControlName="phone" />
+        </label>
+      </div>
+      <label>
+        Email
+        <input type="email" inputmode="email" formControlName="email" />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <span class="hint">Email no válido</span>
+        }
+      </label>
+      <label>
+        Dirección
+        <input formControlName="address" placeholder="Calle, número" />
+      </label>
+      <div class="row">
+        <label>
+          C. postal
+          <input inputmode="numeric" formControlName="postalCode" />
+        </label>
+        <label>
+          Ciudad
+          <input formControlName="city" />
+        </label>
+      </div>
+      <div class="row">
+        <label>
+          Provincia
+          <input formControlName="province" />
+        </label>
+        <label>
+          País
+          <input formControlName="country" />
+        </label>
+      </div>
+      <label>
+        Web
+        <input type="url" inputmode="url" formControlName="website" placeholder="www.…" />
+      </label>
+      <div class="form-actions sticky-actions">
+        <button type="button" class="btn" (click)="editOpen.set(false)">Cancelar</button>
+        <button type="submit" class="btn primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </app-dialog>
+}

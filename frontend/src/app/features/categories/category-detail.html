@@ -1,0 +1,94 @@
+<div class="page-header detail">
+  <div class="title">
+    <h1>{{ category()?.name ?? 'Categoría' }}</h1>
+    @if (category()?.description; as description) {
+      <p class="muted small">{{ description }}</p>
+    }
+  </div>
+  <div class="header-actions">
+    <a class="btn small" routerLink="/categorias">← Volver</a>
+    <button class="btn small" [disabled]="!category()" (click)="startEdit()">Editar</button>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<section class="block">
+  <div class="block-head">
+    <h2>Productos <span class="badge">{{ products().length }}</span></h2>
+    <div class="header-actions">
+      <button class="btn small" (click)="editor.create({ categoryId: categoryId() })">+ Nuevo</button>
+      <button class="btn small" (click)="startAssign()">Asignar</button>
+    </div>
+  </div>
+  <div class="card list-card">
+    <ul class="list">
+      @for (p of products(); track p.id) {
+        <li>
+          <button class="prod" [class.low]="p.lowStock" (click)="editor.edit(p.id)">
+            <span class="prod-info">
+              <span class="name">{{ p.name }}</span>
+              <span class="muted small">{{ p.suppliers.length ? supplierNames(p) : 'Sin proveedor' }}</span>
+            </span>
+            <span class="qty" [class.danger-text]="p.lowStock">
+              {{ p.quantity | number: '1.0-3' }} {{ unitShort[p.unit] }}
+            </span>
+          </button>
+        </li>
+      } @empty {
+        <li class="empty">Sin productos. Crea uno o pulsa «Asignar» para traerlos de otra categoría.</li>
+      }
+    </ul>
+  </div>
+</section>
+
+@switch (sheet()) {
+  @case ('edit') {
+    <app-dialog title="Editar categoría" (closed)="closeSheet()">
+      <form class="form" [formGroup]="form" (ngSubmit)="saveCategory()">
+        <label>
+          Nombre
+          <input formControlName="name" autocapitalize="sentences" enterkeyhint="done" />
+        </label>
+        <label>
+          <span>Descripción <span class="muted small">(opcional)</span></span>
+          <textarea formControlName="description" rows="2"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="button" class="btn" (click)="closeSheet()">Cancelar</button>
+          <button type="submit" class="btn primary" [disabled]="form.invalid || saving()">Guardar</button>
+        </div>
+      </form>
+      <div class="dialog-danger">
+        <button
+          type="button"
+          class="btn danger block"
+          [disabled]="!!products().length || saving()"
+          (click)="removeCategory()"
+        >
+          {{ products().length ? 'Tiene productos: no se puede borrar' : 'Borrar categoría' }}
+        </button>
+      </div>
+    </app-dialog>
+  }
+
+  @case ('assign') {
+    <app-dialog [title]="'Traer productos a ' + (category()?.name ?? '')" (closed)="closeSheet()">
+      <p class="muted small">Los marcados se moverán a esta categoría.</p>
+      <app-product-picker
+        filterBy="category"
+        [products]="others()"
+        [selected]="assignSelected()"
+        (toggle)="toggleAssign($event)"
+      />
+      <div class="form-actions sticky-actions">
+        <button class="btn" (click)="closeSheet()">Cancelar</button>
+        <button class="btn primary" [disabled]="saving() || !assignSelected().size" (click)="saveAssign()">
+          Mover ({{ assignSelected().size }})
+        </button>
+      </div>
+    </app-dialog>
+  }
+}

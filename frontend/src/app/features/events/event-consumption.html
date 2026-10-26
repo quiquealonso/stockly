@@ -1,0 +1,91 @@
+<div class="page-dialog-backdrop">
+  <div class="page-dialog" role="dialog" aria-modal="true" aria-labelledby="cons-title">
+    <header class="page-dialog-head">
+      <div>
+        <h2 id="cons-title">Consumo del evento</h2>
+        <p class="muted small">
+          {{ event()?.name }}
+          @if (event()?.guests; as guests) {
+            · {{ guests }} comensales
+          }
+        </p>
+      </div>
+      <a class="dialog-close" aria-label="Cerrar" [routerLink]="['/eventos', id()]">✕</a>
+    </header>
+
+    <div class="page-dialog-body">
+      @if (error()) {
+        <div class="alert">{{ error() }}</div>
+      }
+
+      <p class="muted small">
+        Pon cuánto se consumió de cada producto. Los vacíos no entran. Esto solo lo apunta:
+        el stock se descuenta después desde la ficha del evento.
+      </p>
+
+      <div class="tools">
+        <input
+          type="search"
+          placeholder="Buscar producto…"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+        <select aria-label="Filtrar por categoría" (change)="setCategory($any($event.target).value)">
+          <option value="">Todas las categorías</option>
+          @for (c of categories(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <label class="check only-marked">
+        <input type="checkbox" [checked]="onlyMarked()" (change)="onlyMarked.set(!onlyMarked())" />
+        Ver solo lo apuntado
+      </label>
+
+      <section class="card lines">
+        <ul class="list">
+          @for (p of visible(); track p.id) {
+            <li class="line" [class.on]="inEvent(p.id)">
+              <span class="line-info">
+                <span class="name">{{ p.name }}</span>
+                <span class="small" [class.muted]="!exceeds(p)" [class.danger-text]="exceeds(p)">
+                  {{ p.category?.name }} · hay {{ p.quantity | number: '1.0-3' }}
+                </span>
+              </span>
+              <span class="line-qty">
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  placeholder="—"
+                  [attr.aria-label]="'Consumo de ' + p.name"
+                  [value]="qty()[p.id] ?? ''"
+                  (input)="setQty(p.id, $any($event.target).value)"
+                />
+                <span class="muted small">{{ unitShort[p.unit] }}</span>
+              </span>
+            </li>
+          } @empty {
+            <li class="empty">
+              @if (onlyMarked()) {
+                Nada apuntado todavía. <button class="link" (click)="onlyMarked.set(false)">Ver todos</button>.
+              } @else {
+                No hay productos con estos filtros.
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <footer class="page-dialog-foot">
+      <span class="muted small"><strong>{{ items().length }}</strong> productos</span>
+      <div class="form-actions">
+        <a class="btn" [routerLink]="['/eventos', id()]">Cancelar</a>
+        <button class="btn primary" [disabled]="saving() || !event()" (click)="save()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

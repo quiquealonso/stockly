@@ -1,0 +1,67 @@
+.page-header p::first-letter {
+  text-transform: uppercase;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  border-left: 4px solid var(--danger);
+
+  p {
+    margin: 0.2rem 0 0;
+  }
+  .btn {
+    flex: none;
+  }
+
+  &.done {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    border-left-color: var(--ok);
+
+    strong {
+      color: var(--ok);
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 52px;
+  padding: 0.5rem 1rem;
+
+  &.short {
+    box-shadow: inset 4px 0 0 var(--danger);
+  }
+
+  .name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.qty {
+  flex: none;
+  font-weight: 700;
+  color: var(--danger);
+  font-variant-numeric: tabular-nums;
+
+  small {
+    font-weight: 400;
+    color: var(--muted);
+  }
+}

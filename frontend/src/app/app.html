@@ -1,0 +1,84 @@
+@if (supabase.session()) {
+  <header class="topbar">
+    <a class="brand" routerLink="/stock" [title]="company()?.name ?? 'Stockly'">
+      @if (company()?.logo; as logo) {
+        <img [src]="logo" alt="" width="40" height="40" />
+      }
+      <span class="brand-name">{{ company()?.name ?? 'Stockly' }}</span>
+    </a>
+    <nav class="desktop-only">
+      <a routerLink="/stock" routerLinkActive="active">Stock</a>
+      <a routerLink="/categorias" routerLinkActive="active">Categorías</a>
+      <a routerLink="/proveedores" routerLinkActive="active">Proveedores</a>
+      <a routerLink="/eventos" routerLinkActive="active">Eventos</a>
+      <a routerLink="/control" routerLinkActive="active">Control</a>
+      <a routerLink="/perfil" routerLinkActive="active">Perfil</a>
+    </nav>
+    <button class="btn small" [title]="supabase.email" (click)="logout()">Salir</button>
+  </header>
+
+  <nav class="tabbar">
+    <a routerLink="/stock" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 7l9-4 9 4v10l-9 4-9-4V7zm9 1.8L5 5.9v.1l7 3.1 7-3.1v-.1l-7 2.9zM5 8.2v7.5l6 2.7v-7.5L5 8.2zm8 10.2l6-2.7V8.2l-6 2.7v7.5z" />
+      </svg>
+      Stock
+    </a>
+    <a routerLink="/categorias" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 4h7v7H4V4zm2 2v3h3V6H6zm7-2h7v7h-7V4zm2 2v3h3V6h-3zM4 13h7v7H4v-7zm2 2v3h3v-3H6zm7-2h7v7h-7v-7zm2 2v3h3v-3h-3z" />
+      </svg>
+      Categorías
+    </a>
+    <a routerLink="/proveedores" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M1 5h13v3h4l4 5v5h-2.2a3 3 0 0 1-5.6 0H9.8a3 3 0 0 1-5.6 0H1V5zm2 2v9h1.2a3 3 0 0 1 5.6 0H12V7H3zm11 3v6h.2a3 3 0 0 1 5.6 0h.2v-2.3L17 10h-3zM7 16.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm10 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+      </svg>
+      Proveedores
+    </a>
+    <a routerLink="/eventos" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2zM5 10v9h14v-9H5zm0-2h14V6H5v2zm2 4h4v4H7v-4z" />
+      </svg>
+      Eventos
+    </a>
+    <a routerLink="/control" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M13 3a9 9 0 1 1-8.95 10H6.1A7 7 0 1 0 13 5a6.98 6.98 0 0 0-5.47 2.63L10 10H3V3l2.11 2.11A8.97 8.97 0 0 1 13 3zm-1 5h2v4.59l3.2 3.2-1.4 1.42L12 13.41V8z" />
+      </svg>
+      Control
+    </a>
+    <a routerLink="/perfil" routerLinkActive="active">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 10c4.4 0 8 2.2 8 5v3H4v-3c0-2.8 3.6-5 8-5zm0 2c-3.5 0-6 1.6-6 3v1h12v-1c0-1.4-2.5-3-6-3z" />
+      </svg>
+      Perfil
+    </a>
+  </nav>
+}
+
+<main class="container">
+  <router-outlet />
+</main>
+
+@if (toast.current(); as t) {
+  <div class="toast" [class.error]="t.error" role="status">{{ t.text }}</div>
+}
+
+@if (productEditor.current()) {
+  <app-product-dialog />
+}
+
+@if (confirm.current(); as c) {
+  <div class="sheet-backdrop" (click)="confirm.answer(false)">
+    <div class="sheet confirm" role="alertdialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <p>{{ c.message }}</p>
+      <div class="confirm-actions">
+        <button class="btn" (click)="confirm.answer(false)">Cancelar</button>
+        <button class="btn" [class.primary]="!c.danger" [class.danger-solid]="c.danger" (click)="confirm.answer(true)">
+          {{ c.ok ?? 'Aceptar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

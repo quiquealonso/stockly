@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Restaurante La Plaza (ficticio)">
+  <!-- Logo de una empresa FICTICIA, solo para el vídeo de demostración -->
+  <circle cx="100" cy="100" r="98" fill="#7c2d12"/>
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#fde68a" stroke-width="3"/>
+  <!-- Tenedor y cuchillo -->
+  <g fill="#fde68a">
+    <rect x="70" y="40" width="5" height="34" rx="2"/>
+    <rect x="80" y="40" width="5" height="34" rx="2"/>
+    <rect x="90" y="40" width="5" height="34" rx="2"/>
+    <path d="M68 72h29v6c0 6-5 10-10 11v43a4.5 4.5 0 0 1-9 0V89c-5-1-10-5-10-11z"/>
+    <path d="M118 40c11 6 16 20 14 40l-6 2v50a4.5 4.5 0 0 1-9 0z"/>
+  </g>
+  <text x="100" y="160" text-anchor="middle" font-family="Georgia, serif" font-size="26" fill="#fde68a" font-weight="700">La Plaza</text>
+</svg>

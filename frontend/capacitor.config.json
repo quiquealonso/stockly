@@ -1,0 +1,9 @@
+{
+  "appId": "com.aletes.stock",
+  "appName": "Stockly",
+  "webDir": "dist/frontend/browser",
+  "backgroundColor": "#f5f6f8",
+  "android": {
+    "allowMixedContent": false
+  }
+}

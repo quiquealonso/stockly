@@ -1,0 +1,83 @@
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+  }
+  p {
+    margin: 0.2rem 0 0;
+  }
+}
+
+.hero-info {
+  min-width: 0;
+}
+
+.logo {
+  flex: none;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+
+  &.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 2rem;
+    font-weight: 700;
+  }
+}
+
+.fields {
+  margin: 0;
+
+  > div {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+
+    & + div {
+      border-top: 1px solid var(--border);
+    }
+  }
+  dt {
+    flex: none;
+    width: 6.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  dd {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.session {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.logo-edit {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .logo {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+.logo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

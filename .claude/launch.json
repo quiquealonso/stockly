@@ -1,0 +1,42 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "aletes-front",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "start"
+      ],
+      "port": 4200
+    },
+    {
+      "name": "aletes-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "ng",
+        "--",
+        "serve",
+        "--configuration",
+        "demo"
+      ],
+      "port": 4300
+    },
+    {
+      "name": "stockly-docs",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4400",
+        "--directory",
+        "docs"
+      ],
+      "port": 4400
+    }
+  ]
+}

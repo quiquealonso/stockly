@@ -1,0 +1,91 @@
+<app-dialog [title]="request.id ? 'Editar producto' : 'Nuevo producto'" (closed)="editor.close()">
+  @if (error()) {
+    <div class="alert">{{ error() }}</div>
+  }
+
+  <form class="form" [formGroup]="form" (ngSubmit)="save()">
+    <label>
+      Nombre
+      <input formControlName="name" placeholder="Ej. Aceite de oliva" autocapitalize="sentences" enterkeyhint="next" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <span class="hint">El nombre es obligatorio</span>
+      }
+    </label>
+
+    <div class="row">
+      <label>
+        Categoría
+        <select formControlName="categoryId">
+          <option [ngValue]="0" disabled>Elige…</option>
+          @for (c of categories(); track c.id) {
+            <option [ngValue]="c.id">{{ c.name }}</option>
+          }
+        </select>
+        @if (form.controls.categoryId.invalid && form.controls.categoryId.touched) {
+          <span class="hint">Elige una categoría</span>
+        }
+      </label>
+    </div>
+
+    <div class="field">
+      <span class="field-label">
+        Proveedores <span class="muted small">(los que te lo traen; puede haber varios)</span>
+      </span>
+      <div class="supplier-chips">
+        @for (s of suppliers(); track s.id) {
+          <button
+            type="button"
+            class="chip"
+            [class.selected]="form.controls.supplierIds.value.includes(s.id)"
+            [attr.aria-pressed]="form.controls.supplierIds.value.includes(s.id)"
+            (click)="toggleSupplier(s.id)"
+          >
+            {{ s.name }}
+          </button>
+        } @empty {
+          <span class="muted small">Todavía no hay proveedores.</span>
+        }
+      </div>
+    </div>
+
+    <div class="row">
+      <label>
+        Unidad
+        <select formControlName="unit">
+          @for (u of units; track u[0]) {
+            <option [ngValue]="u[0]">{{ u[1] }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Cantidad
+        <input type="number" inputmode="decimal" step="any" min="0" formControlName="quantity" />
+      </label>
+      <label>
+        Mínimo
+        <input type="number" inputmode="decimal" step="any" min="0" formControlName="minStock" />
+      </label>
+    </div>
+    @if ((form.controls.quantity.invalid && form.controls.quantity.touched) || (form.controls.minStock.invalid && form.controls.minStock.touched)) {
+      <span class="hint">Las cantidades deben ser 0 o más</span>
+    }
+
+    <label class="check">
+      <input type="checkbox" formControlName="active" />
+      Producto activo
+    </label>
+
+    <div class="form-actions">
+      <button type="button" class="btn" (click)="editor.close()">Cancelar</button>
+      <button type="submit" class="btn primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+
+  @if (request.id) {
+    <div class="dialog-danger">
+      <button type="button" class="btn danger block" [disabled]="saving()" (click)="remove()">Borrar producto</button>
+    </div>
+  }
+</app-dialog>

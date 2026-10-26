@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stockly · Control de stock para restaurantes</title>
+  <meta name="description" content="Stockly: app móvil de control de stock para restaurantes. Stock, proveedores, pedidos favoritos, eventos e historial de movimientos. Angular + Supabase, sin backend propio." />
+  <link rel="icon" href="assets/stockly-logo.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #f6faf9;
+      --surface: #ffffff;
+      --text: #12312d;
+      --muted: #4f6b66;
+      --accent: #0f766e;
+      --accent-soft: #e0f2f0;
+      --warn: #c2410c;
+      --border: #dbe7e4;
+      --radius: 16px;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1716;
+        --surface: #142321;
+        --text: #e3efed;
+        --muted: #9db5b0;
+        --accent: #2dd4bf;
+        --accent-soft: #11322e;
+        --border: #23403b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); line-height: 1.6; }
+    a { color: var(--accent); }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+    header.hero {
+      padding: 56px 0 32px;
+      background: radial-gradient(circle at 20% 0%, var(--accent-soft), transparent 60%);
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand img { width: 56px; height: 56px; }
+    .brand span { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+    h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.1; margin: 24px 0 12px; letter-spacing: -0.02em; }
+    .lead { font-size: 1.2rem; color: var(--muted); max-width: 720px; margin: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px;
+      font-weight: 600; text-decoration: none; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    @media (prefers-color-scheme: dark) { .btn.primary { color: #062421; } }
+
+    section { padding: 40px 0; }
+    h2 { font-size: 1.7rem; margin: 0 0 8px; letter-spacing: -0.01em; }
+    .sub { color: var(--muted); margin: 0 0 24px; }
+
+    .video {
+      width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius); background: #000;
+      box-shadow: 0 20px 50px rgba(18, 49, 45, 0.25); display: block;
+    }
+
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 1.1rem; }
+    .card p { margin: 0; color: var(--muted); }
+    .icon {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+      display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 12px;
+    }
+
+    .shots { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img {
+      width: 100%; height: auto; display: block; border-radius: 26px;
+      box-shadow: 0 12px 30px rgba(18, 49, 45, 0.2);
+    }
+    .shots figcaption { text-align: center; color: var(--muted); font-size: 0.92rem; margin-top: 8px; }
+
+    .flow { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); counter-reset: paso; }
+    .flow li {
+      list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px 18px; counter-increment: paso;
+    }
+    .flow li::before {
+      content: counter(paso); display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700;
+      font-size: 0.85rem; margin-right: 8px;
+    }
+    @media (prefers-color-scheme: dark) { .flow li::before { color: #062421; } }
+    .flow { padding: 0; }
+
+    pre {
+      background: #0e1f1d; color: #d9f2ee; padding: 16px 18px; border-radius: 12px; overflow-x: auto;
+      font-size: 0.9rem; line-height: 1.5;
+    }
+    code { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; }
+    p code, li code { background: var(--accent-soft); padding: 1px 6px; border-radius: 6px; font-size: 0.9em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--accent-soft); }
+    tr:last-child td { border-bottom: 0; }
+    .table-wrap { overflow-x: auto; }
+
+    footer { padding: 32px 0 48px; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="brand">
+        <img src="assets/stockly-logo.svg" alt="" />
+        <span>Stockly</span>
+      </div>
+      <h1>El almacén de tu restaurante, en el bolsillo</h1>
+      <p class="lead">
+        App móvil de control de stock para restaurantes y empresas de eventos: stock al día con botones −/+,
+        proveedores y pedidos favoritos que suman, eventos que descuentan su consumo, y un historial de
+        cada movimiento.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="#video">▶ Ver el vídeo</a>
+        <a class="btn" href="https://github.com/quiquealonso/stockly">Código en GitHub</a>
+        <a class="btn" href="#empezar">Ponerla en marcha</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="video">
+      <h2>Cómo funciona, en 2 minutos</h2>
+      <p class="sub">Desde una empresa vacía hasta el día a día. Datos y empresa ficticios.</p>
+      <video class="video" controls preload="metadata" playsinline poster="media/stockly-demo-poster.jpg">
+        <source src="media/stockly-demo.mp4" type="video/mp4" />
+        Tu navegador no puede reproducir el vídeo. <a href="media/stockly-demo.mp4">Descárgalo aquí</a>.
+      </video>
+    </section>
+
+    <section>
+      <h2>Qué hace</h2>
+      <p class="sub">Pensada para usarse de pie, en el almacén, con una mano.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="icon">📦</div>
+          <h3>Stock</h3>
+          <p>Cada producto con su cantidad, unidad y mínimo. Botones −/+ grandes, entradas y salidas de cualquier cantidad y aviso de «bajo mínimos».</p>
+        </div>
+        <div class="card">
+          <div class="icon">🚚</div>
+          <h3>Proveedores</h3>
+          <p>Un producto puede venir de varios proveedores: el recuento es uno solo. Con sus productos, teléfono y notas.</p>
+        </div>
+        <div class="card">
+          <div class="icon">★</div>
+          <h3>Pedidos favoritos</h3>
+          <p>Guarda lo que pides siempre. Copia la lista para enviarla por WhatsApp y, al recibirlo, súmalo todo al stock de una vez.</p>
+        </div>
+        <div class="card">
+          <div class="icon">📅</div>
+          <h3>Eventos</h3>
+          <p>Apunta el consumo de cada evento y descuéntalo del stock en un paso. Los comensales dan el ratio por persona para los siguientes.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🕑</div>
+          <h3>Control</h3>
+          <p>Historial de cada movimiento: quién, cuándo, cuánto y por qué (ajuste, pedido o evento). Los toques seguidos se agrupan en uno.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🏷️</div>
+          <h3>Tu marca</h3>
+          <p>Perfil de la empresa con su logo, que aparece en la cabecera. Funciona en el navegador y como app Android.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Así se ve</h2>
+      <p class="sub">Mobile-first: barra inferior en el móvil, barra superior en tablet y escritorio.</p>
+      <div class="shots">
+        <figure><img src="assets/capturas/stock.jpg" alt="Lista de stock con botones −/+" loading="lazy" /><figcaption>Stock</figcaption></figure>
+        <figure><img src="assets/capturas/proveedor.jpg" alt="Ficha de proveedor con pedidos favoritos y productos" loading="lazy" /><figcaption>Proveedor y pedido favorito</figcaption></figure>
+        <figure><img src="assets/capturas/evento.jpg" alt="Evento descontado con consumo por comensal" loading="lazy" /><figcaption>Evento</figcaption></figure>
+        <figure><img src="assets/capturas/control.jpg" alt="Historial de movimientos" loading="lazy" /><figcaption>Control</figcaption></figure>
+        <figure><img src="assets/capturas/bajo-minimos.jpg" alt="Productos bajo mínimos" loading="lazy" /><figcaption>Bajo mínimos</figcaption></figure>
+        <figure><img src="assets/capturas/categorias.jpg" alt="Lista de categorías" loading="lazy" /><figcaption>Categorías</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>El día a día</h2>
+      <ol class="flow">
+        <li><strong>Alta</strong>: el administrador crea la empresa y da acceso a cada persona del equipo.</li>
+        <li><strong>Perfil</strong>: nombre, datos fiscales y logo.</li>
+        <li><strong>Catálogo</strong>: categorías, proveedores y productos con su mínimo.</li>
+        <li><strong>Pedidos</strong>: llega la mercancía → «Recibido» y suma al stock.</li>
+        <li><strong>Eventos</strong>: apunta el consumo y descuéntalo.</li>
+        <li><strong>Control</strong>: revisa los movimientos y lo que está bajo mínimos.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Cómo está hecha</h2>
+      <p class="sub">Sin servidor propio: el front habla directamente con Supabase y la lógica sensible vive en la base de datos.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Parte</th><th>Tecnología</th></tr>
+          <tr><td>Front</td><td>Angular 22 (standalone, signals), CSS propio, mobile-first</td></tr>
+          <tr><td>Datos</td><td>Supabase: PostgreSQL + Auth + API REST (supabase-js)</td></tr>
+          <tr><td>Seguridad</td><td>Login + políticas RLS: solo entra el personal autorizado (tabla <code>staff</code>)</td></tr>
+          <tr><td>Lógica</td><td>Funciones atómicas en la BBDD (<code>adjust_stock</code>, <code>receive_order</code>, <code>consume_event</code>) y un trigger que escribe el historial</td></tr>
+          <tr><td>Móvil</td><td>Capacitor (APK Android) sobre el mismo front</td></tr>
+          <tr><td>Vídeo</td><td>Grabado automáticamente con Playwright sobre un entorno demo</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="empezar">
+      <h2>Ponerla en marcha</h2>
+      <ol>
+        <li>Crea un proyecto en <a href="https://supabase.com">Supabase</a> y ejecuta <code>supabase/schema.sql</code> en el SQL Editor (opcional: <code>supabase/seed.sql</code> con datos de ejemplo).</li>
+        <li>Añade el esquema <code>aletes</code> en <em>Settings › Data API › Exposed schemas</em>.</li>
+        <li>Crea los usuarios en <em>Authentication › Users</em> y dales acceso:
+          <pre><code>insert into aletes.staff (email) values ('persona@empresa.com');
+insert into aletes.companies (name) values ('Mi restaurante');</code></pre>
+        </li>
+        <li>Configura el front y arráncalo:
+          <pre><code>cd frontend
+cp src/environments/environment.ts src/environments/environment.local.ts
+# rellena supabaseUrl y supabaseAnonKey (Project Settings › API)
+npm install
+npm start</code></pre>
+        </li>
+        <li>Para el móvil: <code>npm run apk</code> (requiere Android Studio).</li>
+      </ol>
+      <p>Más detalle en el <a href="https://github.com/quiquealonso/stockly#readme">README</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      Stockly · Proyecto de <a href="https://github.com/quiquealonso">@quiquealonso</a>. El vídeo y las capturas usan una empresa y datos ficticios.
+    </div>
+  </footer>
+</body>
+</html>

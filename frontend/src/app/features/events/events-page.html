@@ -1,0 +1,69 @@
+<div class="page-header">
+  <h1>Eventos</h1>
+  <button class="btn primary" (click)="openNew()">+ Nuevo</button>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<section class="card ev-list">
+  <ul class="list">
+    @for (e of events(); track e.id) {
+      <li>
+        <a class="ev" [routerLink]="['/eventos', e.id]">
+          <span class="ev-date">
+            <strong>{{ e.eventDate | date: 'd' }}</strong>
+            <span>{{ e.eventDate | date: 'MMM yy' }}</span>
+          </span>
+          <span class="ev-info">
+            <span class="strong">{{ e.name }}</span>
+            <span class="muted small">
+              @if (e.guests) {
+                {{ e.guests }} comensales ·
+              }
+              {{ e.itemCount }} productos
+              @if (e.appliedAt) {
+                <span class="tag ok">Descontado</span>
+              } @else {
+                <span class="tag">Pendiente</span>
+              }
+            </span>
+          </span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </a>
+      </li>
+    } @empty {
+      <li class="empty">{{ loading() ? 'Cargando…' : 'Todavía no hay eventos.' }}</li>
+    }
+  </ul>
+</section>
+
+@if (dialogOpen()) {
+  <app-dialog title="Nuevo evento" (closed)="dialogOpen.set(false)">
+    <form class="form" [formGroup]="form" (ngSubmit)="save()">
+      <label>
+        Nombre
+        <input formControlName="name" placeholder="Ej. Boda García" autocapitalize="sentences" enterkeyhint="next" />
+      </label>
+      <div class="row">
+        <label>
+          Fecha
+          <input type="date" formControlName="eventDate" />
+        </label>
+        <label>
+          <span>Comensales <span class="muted small">(opcional)</span></span>
+          <input type="number" inputmode="numeric" min="0" step="1" formControlName="guests" />
+        </label>
+      </div>
+      <label>
+        <span>Notas <span class="muted small">(opcional)</span></span>
+        <textarea formControlName="notes" rows="2" placeholder="Menú, tipo de evento…"></textarea>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="btn" (click)="dialogOpen.set(false)">Cancelar</button>
+        <button type="submit" class="btn primary" [disabled]="saving()">Crear</button>
+      </div>
+    </form>
+  </app-dialog>
+}

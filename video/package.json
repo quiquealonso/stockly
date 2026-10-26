@@ -1,0 +1,15 @@
+{
+  "name": "aletes-video",
+  "private": true,
+  "description": "Vídeo de presentación de Aletes: entorno demo desde cero + grabación automática con Playwright",
+  "type": "module",
+  "scripts": {
+    "demo": "node crear-demo.mjs",
+    "login": "node login.mjs",
+    "grabar": "node grabar.mjs"
+  },
+  "devDependencies": {
+    "pg": "^8.23.1",
+    "playwright": "^1.64.1"
+  }
+}
