@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { errorMessage } from '../../core/api.service';
+import { DEMO_EMAIL } from '../../core/demo/demo-data';
+import { DEMO } from '../../core/demo/demo-mode';
 import { SupabaseService } from '../../core/supabase.service';
 
 @Component({
@@ -11,6 +13,12 @@ import { SupabaseService } from '../../core/supabase.service';
     <form class="card form login" [formGroup]="form" (ngSubmit)="submit()">
       <h1>Stockly</h1>
       <p class="muted">Control de stock · acceso del personal</p>
+      @if (demo) {
+        <p class="login-demo">
+          Demo con datos ficticios: entra con cualquier email y contraseña. Nada sale de tu
+          navegador y al recargar vuelve a empezar.
+        </p>
+      }
       @if (error()) {
         <div class="alert">{{ error() }}</div>
       }
@@ -23,7 +31,7 @@ import { SupabaseService } from '../../core/supabase.service';
         <input type="password" formControlName="password" autocomplete="current-password" enterkeyhint="go" />
       </label>
       <button type="submit" class="btn primary block" [disabled]="form.invalid || loading()">
-        {{ loading() ? 'Entrando…' : 'Entrar' }}
+        {{ loading() ? 'Entrando…' : demo ? 'Entrar a la demo' : 'Entrar' }}
       </button>
     </form>
   `,
@@ -31,6 +39,13 @@ import { SupabaseService } from '../../core/supabase.service';
     .login {
       max-width: 380px;
       margin: calc(8vh + var(--safe-top)) auto 0;
+    }
+    .login-demo {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary, #2563eb) 10%, transparent);
+      font-size: 14px;
     }
   `,
 })
@@ -41,9 +56,11 @@ export class LoginPage {
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  protected readonly demo = DEMO;
+
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required],
+    email: [DEMO ? DEMO_EMAIL : '', [Validators.required, Validators.email]],
+    password: [DEMO ? 'demo' : '', Validators.required],
   });
 
   protected async submit() {

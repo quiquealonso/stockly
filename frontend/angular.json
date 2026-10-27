@@ -98,6 +98,32 @@
                   "with": "src/environments/environment.demo.ts"
                 }
               ]
+            },
+            "web-demo": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "8kB",
+                  "maximumError": "16kB"
+                }
+              ],
+              "outputHashing": "all",
+              "baseHref": "./",
+              "outputPath": {
+                "base": "../docs/demo",
+                "browser": ""
+              },
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.web-demo.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -114,6 +140,10 @@
             "demo": {
               "buildTarget": "frontend:build:demo",
               "port": 4300
+            },
+            "web-demo": {
+              "buildTarget": "frontend:build:web-demo",
+              "port": 4500
             }
           },
           "defaultConfiguration": "development"

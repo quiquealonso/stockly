@@ -1,0 +1,1 @@
+import{S as Fe,it as S,n as $w,tn as k}from"./chunk-BauaNCm5.js";function w(t){t||(t=S(Fe));let i=new k(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe($w(i))}export{w as t};

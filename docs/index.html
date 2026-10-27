@@ -1,250 +1,598 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stockly · Control de stock para restaurantes</title>
-  <meta name="description" content="Stockly: app móvil de control de stock para restaurantes. Stock, proveedores, pedidos favoritos, eventos e historial de movimientos. Angular + Supabase, sin backend propio." />
+  <meta name="description" content="Stockly: app móvil de control de stock para restaurantes y empresas de eventos. Stock, proveedores, pedidos favoritos, eventos e historial. Angular + Supabase, sin backend propio. Demo en vivo." />
+  <meta name="theme-color" content="#7c3aed" />
+  <meta property="og:title" content="Stockly · Control de stock para restaurantes" />
+  <meta property="og:description" content="El almacén de tu restaurante, en el bolsillo. Pruébala en vivo con datos ficticios." />
+  <meta property="og:image" content="https://quiquealonso.github.io/stockly/media/stockly-demo-poster.jpg" />
   <link rel="icon" href="assets/stockly-logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&family=DM+Mono:wght@400;500&display=swap" />
+  <script>
+    // Claro por defecto; solo cambia si la persona eligió oscuro en esta web.
+    (function () {
+      var t = 'light';
+      try { if (localStorage.getItem('stockly-theme') === 'dark') t = 'dark'; } catch (e) {}
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.classList.add('js');
+    })();
+  </script>
   <style>
     :root {
-      --bg: #f6faf9;
+      color-scheme: light;
+      --bg: #faf8ff;
       --surface: #ffffff;
-      --text: #12312d;
-      --muted: #4f6b66;
-      --accent: #0f766e;
-      --accent-soft: #e0f2f0;
-      --warn: #c2410c;
-      --border: #dbe7e4;
-      --radius: 16px;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      color: var(--text);
-      background: var(--bg);
+      --surface-2: #f3effe;
+      --ink: #1d1530;
+      --muted: #645c7a;
+      --line: #e9e3f7;
+      --line-strong: #d8cdf3;
+      --accent: #7c3aed;
+      --accent-2: #c026d3;
+      --accent-soft: #efe8fe;
+      --accent-text: #6d28d9;
+      --yellow: #fde047;
+      --ok: #059669;
+      --warn: #dc2626;
+      --shadow: 0 1px 2px rgba(45, 20, 90, 0.05), 0 12px 32px -12px rgba(76, 29, 149, 0.18);
+      --shadow-lg: 0 2px 4px rgba(45, 20, 90, 0.04), 0 40px 80px -24px rgba(76, 29, 149, 0.35);
+      --dots: rgba(124, 58, 237, 0.13);
+      --radius: 20px;
+      --sans: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --mono: 'DM Mono', Consolas, monospace;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0d1716;
-        --surface: #142321;
-        --text: #e3efed;
-        --muted: #9db5b0;
-        --accent: #2dd4bf;
-        --accent-soft: #11322e;
-        --border: #23403b;
-      }
+    :root[data-theme='dark'] {
+      color-scheme: dark;
+      --bg: #0e0a1a;
+      --surface: #171127;
+      --surface-2: #1f1734;
+      --ink: #f1edfb;
+      --muted: #a69dbf;
+      --line: #2a2140;
+      --line-strong: #3a2e57;
+      --accent: #8b5cf6;
+      --accent-soft: #2a1d4b;
+      --accent-text: #c4b5fd;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+      --shadow-lg: 0 40px 80px -24px rgba(0, 0, 0, 0.7);
+      --dots: rgba(196, 181, 253, 0.08);
     }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); line-height: 1.6; }
-    a { color: var(--accent); }
-    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
 
-    header.hero {
-      padding: 56px 0 32px;
-      background: radial-gradient(circle at 20% 0%, var(--accent-soft), transparent 60%);
+    *, *::before, *::after { box-sizing: border-box; }
+    html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: 6rem; background: var(--bg); }
+    body {
+      margin: 0; min-width: 320px; overflow-x: clip;
+      color: var(--ink); background: var(--bg);
+      font-family: var(--sans); font-size: 1.04rem; line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
     }
-    .brand { display: flex; align-items: center; gap: 14px; }
-    .brand img { width: 56px; height: 56px; }
-    .brand span { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
-    h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.1; margin: 24px 0 12px; letter-spacing: -0.02em; }
-    .lead { font-size: 1.2rem; color: var(--muted); max-width: 720px; margin: 0; }
-    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.035em; line-height: 1.08; }
+    p { margin: 0; color: var(--muted); }
+    a { color: var(--accent-text); }
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 10px; }
+    img, video, iframe { display: block; max-width: 100%; }
+    code { font-family: var(--mono); font-size: 0.86em; }
+    .serif { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+    .grad { background: linear-gradient(100deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    :root[data-theme='dark'] .grad { background-image: linear-gradient(100deg, #c4b5fd, #f0abfc); }
+    .wrap { width: min(1180px, 100% - 2.5rem); margin-inline: auto; }
+    .eyebrow { display: inline-block; margin-bottom: 1rem; font-family: var(--mono); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-text); }
+
+    /* Fondo: manchas de color difuminadas + rejilla de puntos */
+    .backdrop { position: absolute; inset: 0 0 auto; height: 1100px; z-index: -1; overflow: hidden; pointer-events: none; }
+    .backdrop::before {
+      position: absolute; inset: 0; content: '';
+      background-image: radial-gradient(var(--dots) 1.2px, transparent 1.2px); background-size: 22px 22px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
+    }
+    .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.55; }
+    .blob--1 { top: -180px; left: 50%; width: 620px; height: 480px; margin-left: -520px; background: #c4b5fd; }
+    .blob--2 { top: -120px; left: 50%; width: 520px; height: 420px; margin-left: 40px; background: #f5d0fe; }
+    .blob--3 { top: 420px; left: 50%; width: 420px; height: 360px; margin-left: -210px; background: #ddd6fe; opacity: 0.45; }
+    :root[data-theme='dark'] .blob { opacity: 0.22; }
+
+    /* ---------- Cabecera flotante ---------- */
+    .site-header { position: fixed; top: 0.9rem; left: 0; right: 0; z-index: 50; }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      width: min(1040px, 100% - 1.5rem); margin-inline: auto; padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+      border: 1px solid var(--line); border-radius: 99px;
+      background: color-mix(in srgb, var(--surface) 78%, transparent); backdrop-filter: blur(16px) saturate(1.4);
+      box-shadow: var(--shadow);
+    }
+    .logo { display: inline-flex; align-items: center; gap: 0.55rem; font-weight: 800; font-size: 1.1rem; letter-spacing: -0.03em; color: var(--ink); text-decoration: none; }
+    .logo img { width: 30px; height: 30px; }
+    .nav-links { display: flex; gap: 0.15rem; }
+    .nav-links a { padding: 0.45rem 0.8rem; border-radius: 99px; color: var(--muted); font-size: 0.92rem; font-weight: 600; text-decoration: none; transition: color 0.2s, background 0.2s; }
+    .nav-links a:hover { color: var(--ink); background: var(--surface-2); }
+    .nav-end { display: flex; align-items: center; gap: 0.4rem; }
+    .icon-btn { display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--ink); cursor: pointer; transition: border-color 0.2s, transform 0.3s var(--ease); }
+    .icon-btn:hover { border-color: var(--accent); transform: rotate(-15deg); }
+    .icon-btn svg { width: 1.1rem; height: 1.1rem; }
+    .theme-sun { display: none; }
+    :root[data-theme='dark'] .theme-sun { display: block; }
+    :root[data-theme='dark'] .theme-moon { display: none; }
+
+    /* ---------- Botones ---------- */
     .btn {
-      display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px;
-      font-weight: 600; text-decoration: none; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
+      min-height: 3.1rem; padding: 0.75rem 1.4rem; border: 1px solid transparent; border-radius: 14px;
+      font: inherit; font-weight: 700; font-size: 0.98rem; text-decoration: none; cursor: pointer;
+      transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), background 0.2s, border-color 0.2s;
     }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-    @media (prefers-color-scheme: dark) { .btn.primary { color: #062421; } }
+    .btn:hover { transform: translateY(-2px); }
+    .btn--primary { color: #fff; background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 10px 24px -8px rgba(109, 40, 217, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+    .btn--primary:hover { box-shadow: 0 16px 32px -10px rgba(109, 40, 217, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+    .btn--secondary { color: var(--ink); background: var(--surface); border-color: var(--line-strong); box-shadow: var(--shadow); }
+    .btn--secondary:hover { border-color: var(--accent); }
+    .btn--sm { min-height: 2.5rem; padding: 0.4rem 1rem; border-radius: 99px; font-size: 0.9rem; }
+    .btn svg { width: 1.05rem; height: 1.05rem; }
 
-    section { padding: 40px 0; }
-    h2 { font-size: 1.7rem; margin: 0 0 8px; letter-spacing: -0.01em; }
-    .sub { color: var(--muted); margin: 0 0 24px; }
-
-    .video {
-      width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius); background: #000;
-      box-shadow: 0 20px 50px rgba(18, 49, 45, 0.25); display: block;
+    /* ---------- Hero ---------- */
+    .hero { position: relative; padding: 9.5rem 0 3rem; text-align: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.6rem; margin-bottom: 1.6rem; padding: 0.35rem 0.9rem 0.35rem 0.4rem;
+      border: 1px solid var(--line-strong); border-radius: 99px; background: var(--surface); box-shadow: var(--shadow);
+      color: var(--ink); font-size: 0.88rem; font-weight: 600; text-decoration: none;
     }
+    .badge b { padding: 0.15rem 0.55rem; border-radius: 99px; background: var(--accent); color: #fff; font-size: 0.75rem; }
+    .hero h1 { max-width: 15ch; margin-inline: auto; font-size: clamp(2.7rem, 7vw, 5.4rem); }
+    .hero h1 .serif { font-size: 1.12em; line-height: 0.9; }
+    .hero-lead { max-width: 38rem; margin: 1.5rem auto 2.2rem; font-size: 1.15rem; }
+    .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+    .note { margin-top: 1rem; font-size: 0.85rem; }
 
-    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    /* Móvil con tarjetas flotantes */
+    .showcase { position: relative; width: min(860px, 100%); margin: 4rem auto 0; display: grid; place-items: center; }
+    .phone {
+      position: relative; width: 330px; height: 680px; padding: 11px; border-radius: 46px;
+      background: #18122a; box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.06) inset, 0 0 0 7px var(--surface), 0 0 0 8px var(--line-strong);
+    }
+    .phone::after { position: absolute; top: 20px; left: 50%; z-index: 2; width: 86px; height: 22px; content: ''; border-radius: 99px; background: #000; transform: translateX(-50%); pointer-events: none; }
+    .phone iframe, .phone img { width: 100%; height: 100%; border: 0; border-radius: 36px; background: #f4f7f6; object-fit: cover; object-position: top; }
+    .float {
+      position: absolute; z-index: 3; display: flex; align-items: center; gap: 0.75rem; min-width: 14rem;
+      padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-lg);
+      text-align: left; font-size: 0.9rem; animation: bob 6s ease-in-out infinite;
+    }
+    .float small { display: block; color: var(--muted); font-size: 0.78rem; }
+    .float strong { font-weight: 700; }
+    .float .val { margin-left: auto; font-family: var(--mono); font-weight: 500; }
+    .float .ico { display: grid; place-items: center; flex: none; width: 2.3rem; height: 2.3rem; border-radius: 11px; font-weight: 800; }
+    .float--a { top: 14%; left: 0; }
+    .float--b { top: 44%; right: 0; animation-delay: -2s; }
+    .float--c { bottom: 12%; left: 4%; animation-delay: -4s; }
+    .ico--ok { background: #d1fae5; color: var(--ok); }
+    .ico--warn { background: #fef3c7; color: #b45309; }
+    .ico--purple { background: var(--accent-soft); color: var(--accent-text); }
+    .val--ok { color: var(--ok); }
+    .val--warn { color: var(--warn); }
+    @keyframes bob { 50% { transform: translateY(-10px); } }
+    .showcase-hint { margin-top: 1.6rem; font-size: 0.88rem; }
+
+    /* Banda de cifras */
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 5rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+    .stats div { padding: 1.5rem 1.6rem; }
+    .stats div + div { border-left: 1px solid var(--line); }
+    .stats strong { display: block; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.04em; }
+    .stats span { font-size: 0.9rem; color: var(--muted); }
+
+    /* ---------- Secciones ---------- */
+    section { padding-block: clamp(4.5rem, 9vw, 7rem); }
+    .head { max-width: 44rem; margin: 0 auto clamp(2.4rem, 5vw, 3.5rem); text-align: center; }
+    .head h2 { font-size: clamp(2.1rem, 4.6vw, 3.4rem); }
+    .head h2 .serif { font-size: 1.12em; }
+    .head p { margin-top: 1rem; font-size: 1.08rem; }
+
+    .video-card { padding: 0.6rem; border: 1px solid var(--line); border-radius: 26px; background: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(135deg, #c4b5fd, #f0abfc, #c4b5fd) border-box; border: 1px solid transparent; box-shadow: var(--shadow-lg); }
+    .video-card video { width: 100%; aspect-ratio: 16 / 9; border-radius: 20px; background: #000; }
+
+    /* Funciones */
+    .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; }
     .card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+      padding: 1.6rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow);
+      transition: transform 0.4s var(--ease), border-color 0.3s, box-shadow 0.4s var(--ease);
     }
-    .card h3 { margin: 0 0 6px; font-size: 1.1rem; }
-    .card p { margin: 0; color: var(--muted); }
-    .icon {
-      width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
-      display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 12px;
-    }
+    .card:hover { transform: translateY(-4px); border-color: var(--line-strong); box-shadow: var(--shadow-lg); }
+    .card h3 { margin: 1.1rem 0 0.45rem; font-size: 1.2rem; letter-spacing: -0.02em; }
+    .tile { display: grid; place-items: center; width: 2.9rem; height: 2.9rem; border-radius: 13px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; box-shadow: 0 8px 18px -8px rgba(124, 58, 237, 0.7); }
+    .tile svg { width: 1.4rem; height: 1.4rem; }
+    .card--big { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: center; }
+    .mini { display: grid; gap: 0.55rem; padding: 1rem; border-radius: 16px; background: var(--surface-2); }
+    .mini-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.7rem; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); font-size: 0.88rem; font-weight: 600; }
+    .mini-row small { display: block; font-weight: 500; color: var(--muted); font-size: 0.75rem; }
+    .mini-row .stepper { display: flex; align-items: center; gap: 0.35rem; margin-left: auto; font-family: var(--mono); }
+    .mini-row .stepper i { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 9px; border: 1px solid var(--line-strong); font-style: normal; color: var(--accent-text); }
+    .mini-row .stepper b { min-width: 2.2rem; text-align: center; }
+    .mini-row.low b { color: var(--warn); }
 
-    .shots { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
-    .shots figure { margin: 0; }
-    .shots img {
-      width: 100%; height: auto; display: block; border-radius: 26px;
-      box-shadow: 0 12px 30px rgba(18, 49, 45, 0.2);
-    }
-    .shots figcaption { text-align: center; color: var(--muted); font-size: 0.92rem; margin-top: 8px; }
+    /* Pantallas */
+    .screens { padding: 2.2rem 0 2.4rem; border-radius: 30px; background: linear-gradient(160deg, var(--accent-soft), var(--surface-2)); border: 1px solid var(--line); }
+    .shots { display: flex; gap: 1.3rem; overflow-x: auto; padding: 0.6rem 2.2rem 1rem; scroll-snap-type: x mandatory; scroll-padding: 2.2rem; scrollbar-width: thin; }
+    .shots figure { flex: 0 0 auto; width: 220px; margin: 0; scroll-snap-align: start; }
+    .shots img { width: 100%; height: auto; border-radius: 26px; border: 6px solid var(--surface); box-shadow: var(--shadow-lg); transition: transform 0.5s var(--ease); }
+    .shots figure:hover img { transform: translateY(-6px); }
+    .shots figcaption { margin-top: 0.9rem; text-align: center; font-weight: 700; font-size: 0.95rem; }
 
-    .flow { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); counter-reset: paso; }
-    .flow li {
-      list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 16px 18px; counter-increment: paso;
+    /* Día a día */
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; margin: 0; padding: 0; list-style: none; counter-reset: paso; }
+    .steps li { position: relative; padding: 1.5rem; border: 1px dashed var(--line-strong); border-radius: var(--radius); counter-increment: paso; }
+    .steps li::before {
+      display: grid; place-items: center; width: 2.4rem; height: 2.4rem; margin-bottom: 1rem; content: counter(paso);
+      border-radius: 50%; background: var(--yellow); color: #3b0764; font-weight: 800;
     }
-    .flow li::before {
-      content: counter(paso); display: inline-flex; align-items: center; justify-content: center;
-      width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700;
-      font-size: 0.85rem; margin-right: 8px;
-    }
-    @media (prefers-color-scheme: dark) { .flow li::before { color: #062421; } }
-    .flow { padding: 0; }
+    .steps h3 { margin-bottom: 0.35rem; font-size: 1.15rem; letter-spacing: -0.02em; }
 
-    pre {
-      background: #0e1f1d; color: #d9f2ee; padding: 16px 18px; border-radius: 12px; overflow-x: auto;
-      font-size: 0.9rem; line-height: 1.5;
-    }
-    code { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; }
-    p code, li code { background: var(--accent-soft); padding: 1px 6px; border-radius: 6px; font-size: 0.9em; }
-    table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
-    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
-    th { background: var(--accent-soft); }
-    tr:last-child td { border-bottom: 0; }
-    .table-wrap { overflow-x: auto; }
+    /* Técnica */
+    .tech { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.1rem; }
+    .checks { display: grid; gap: 0.9rem; margin: 0; padding: 0; list-style: none; }
+    .checks li { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.7rem; }
+    .checks li::before { content: '✓'; display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); font-weight: 800; font-size: 0.85rem; }
+    .checks b { color: var(--ink); }
+    .checks p { font-size: 0.97rem; }
+    .flow { display: grid; gap: 0; margin-top: 0.4rem; }
+    .node { display: flex; align-items: center; gap: 0.8rem; padding: 0.95rem 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); font-weight: 700; }
+    .node small { margin-left: auto; font-family: var(--mono); font-weight: 400; font-size: 0.75rem; color: var(--muted); text-align: right; }
+    .node--db { border-color: var(--accent); background: var(--accent-soft); }
+    .link { position: relative; height: 2.6rem; margin-left: 1.6rem; padding-left: 1.2rem; border-left: 2px dashed var(--line-strong); display: flex; align-items: center; font-family: var(--mono); font-size: 0.78rem; color: var(--accent-text); }
+    .pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.3rem; }
+    .pills code { padding: 0.25rem 0.65rem; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); font-size: 0.75rem; }
 
-    footer { padding: 32px 0 48px; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); margin-top: 24px; }
+    /* Puesta en marcha */
+    .setup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem; counter-reset: s; }
+    .setup .card { counter-increment: s; }
+    .setup h3 { display: flex; align-items: center; gap: 0.65rem; margin: 0 0 0.6rem; }
+    .setup h3::before { content: counter(s); display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 9px; background: var(--accent-soft); color: var(--accent-text); font-size: 0.9rem; }
+    .setup p code { padding: 0.1rem 0.4rem; border-radius: 6px; background: var(--surface-2); color: var(--ink); }
+    .term { margin-top: 1rem; overflow: hidden; border-radius: 14px; background: #1a1230; color: #e9e2fb; }
+    .term pre { margin: 0; padding: 1rem 1.1rem; overflow-x: auto; font-family: var(--mono); font-size: 0.84rem; line-height: 1.65; }
+    .term .k { color: #c4b5fd; }
+    .term .c { color: #8b80a8; }
+
+    /* Llamada final */
+    .cta {
+      position: relative; overflow: hidden; padding: clamp(3rem, 7vw, 5rem) clamp(1.5rem, 5vw, 4rem); border-radius: 32px; text-align: center; color: #fff;
+      background: radial-gradient(40rem 20rem at 85% 0%, rgba(240, 171, 252, 0.45), transparent 60%), linear-gradient(135deg, #7c3aed, #4c1d95);
+      box-shadow: var(--shadow-lg);
+    }
+    .cta::before { position: absolute; inset: 0; content: ''; background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.2px, transparent 1.2px); background-size: 22px 22px; mask-image: linear-gradient(transparent, #000); -webkit-mask-image: linear-gradient(transparent, #000); }
+    .cta > * { position: relative; }
+    .cta img { width: 64px; height: 64px; margin: 0 auto 1.4rem; border-radius: 16px; box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5); }
+    .cta h2 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+    .cta .serif { font-size: 1.12em; }
+    .cta p { max-width: 34rem; margin: 1.1rem auto 2rem; color: rgba(255, 255, 255, 0.82); }
+    .cta .btn--primary { color: #4c1d95; background: #fff; box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.4); }
+    .cta .btn--secondary { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.35); box-shadow: none; }
+
+    footer { padding: 2.5rem 0 3rem; }
+    .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
+
+    /* Aparición al hacer scroll */
+    .js [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+    .js [data-reveal].is-in { opacity: 1; transform: none; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 960px) {
+      .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tech { grid-template-columns: minmax(0, 1fr); }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stats div:nth-child(3) { border-left: 0; }
+      .stats div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+      .float--a { left: -1rem; }
+      .float--b { right: -1rem; }
+    }
+    @media (max-width: 760px) {
+      .nav-links, .gh-text { display: none; }
+      .hero { padding-top: 7.5rem; }
+      .features, .steps, .setup { grid-template-columns: minmax(0, 1fr); }
+      .card--big { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
+      .phone { width: 280px; height: 580px; border-radius: 40px; }
+      .phone iframe, .phone img { border-radius: 30px; }
+      .float { min-width: 0; padding: 0.6rem 0.75rem; font-size: 0.8rem; }
+      .float--a { top: 6%; left: -0.4rem; }
+      .float--b { display: none; }
+      .float--c { bottom: 8%; left: auto; right: -0.4rem; }
+      .shots { padding-inline: 1.2rem; scroll-padding: 1.2rem; }
+      .shots figure { width: 190px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .float { animation: none; }
+      .js [data-reveal] { opacity: 1; transform: none; transition: none; }
+    }
   </style>
 </head>
 <body>
-  <header class="hero">
-    <div class="wrap">
-      <div class="brand">
-        <img src="assets/stockly-logo.svg" alt="" />
-        <span>Stockly</span>
+  <div class="backdrop" aria-hidden="true"><i class="blob blob--1"></i><i class="blob blob--2"></i><i class="blob blob--3"></i></div>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Navegación principal">
+      <a class="logo" href="#" aria-label="Stockly, inicio">
+        <img src="assets/stockly-logo.svg" alt="" width="30" height="30" />
+        Stockly
+      </a>
+      <div class="nav-links">
+        <a href="#video">Vídeo</a>
+        <a href="#funciones">Funciones</a>
+        <a href="#pantallas">Pantallas</a>
+        <a href="#tecnica">Técnica</a>
+        <a href="#empezar">Empezar</a>
       </div>
-      <h1>El almacén de tu restaurante, en el bolsillo</h1>
-      <p class="lead">
-        App móvil de control de stock para restaurantes y empresas de eventos: stock al día con botones −/+,
-        proveedores y pedidos favoritos que suman, eventos que descuentan su consumo, y un historial de
-        cada movimiento.
-      </p>
-      <div class="actions">
-        <a class="btn primary" href="#video">▶ Ver el vídeo</a>
-        <a class="btn" href="https://github.com/quiquealonso/stockly">Código en GitHub</a>
-        <a class="btn" href="#empezar">Ponerla en marcha</a>
+      <div class="nav-end">
+        <button type="button" class="icon-btn" id="theme" aria-label="Cambiar entre modo claro y oscuro">
+          <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></svg>
+        </button>
+        <a class="btn btn--primary btn--sm" href="https://github.com/quiquealonso/stockly">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
+          <span class="gh-text">GitHub</span>
+        </a>
       </div>
-    </div>
+    </nav>
   </header>
 
-  <main class="wrap">
-    <section id="video">
-      <h2>Cómo funciona, en 2 minutos</h2>
-      <p class="sub">Desde una empresa vacía hasta el día a día. Datos y empresa ficticios.</p>
-      <video class="video" controls preload="metadata" playsinline poster="media/stockly-demo-poster.jpg">
-        <source src="media/stockly-demo.mp4" type="video/mp4" />
-        Tu navegador no puede reproducir el vídeo. <a href="media/stockly-demo.mp4">Descárgalo aquí</a>.
-      </video>
+  <main>
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <a class="badge" href="demo/"><b>Nuevo</b> Pruébala en vivo, sin registro →</a>
+      <h1 id="hero-title">El almacén de tu restaurante, en el <span class="serif grad">bolsillo</span></h1>
+      <p class="hero-lead">
+        Stockly lleva el stock con botones −/+, suma los pedidos de tus proveedores de una vez, descuenta
+        el consumo de cada evento y guarda el historial de cada movimiento.
+      </p>
+      <div class="actions">
+        <a class="btn btn--primary" href="demo/">Abrir la demo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn--secondary" href="#video">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Ver el vídeo</a>
+      </div>
+      <p class="note">Datos ficticios · funciona entera en tu navegador</p>
+
+      <div class="showcase" data-reveal>
+        <div class="phone">
+          <img id="phone-shot" src="assets/capturas/stock.jpg" alt="Stockly en el móvil: lista de stock" />
+        </div>
+        <div class="float float--a" aria-hidden="true">
+          <span class="ico ico--ok">+</span>
+          <span><strong>Pedido recibido</strong><small>Bebidas semanal · 5 productos</small></span>
+          <span class="val val--ok">+68</span>
+        </div>
+        <div class="float float--b" aria-hidden="true">
+          <span class="ico ico--warn">!</span>
+          <span><strong>Bajo mínimos</strong><small>Merluza, Limón, Leche…</small></span>
+          <span class="val">7</span>
+        </div>
+        <div class="float float--c" aria-hidden="true">
+          <span class="ico ico--purple">◷</span>
+          <span><strong>Boda García</strong><small>120 comensales · descontado</small></span>
+          <span class="val val--warn">−106</span>
+        </div>
+      </div>
+      <p class="showcase-hint" id="phone-hint">Captura de la app · <a href="demo/">ábrela en vivo</a></p>
+
+      <div class="stats" data-reveal>
+        <div><strong>0</strong><span>servidores propios: Supabase y listo</span></div>
+        <div><strong>1 toque</strong><span>para sumar o restar stock</span></div>
+        <div><strong>2 min</strong><span>de toques seguidos = 1 registro</span></div>
+        <div><strong>Android</strong><span>y navegador, el mismo código</span></div>
+      </div>
     </section>
 
-    <section>
-      <h2>Qué hace</h2>
-      <p class="sub">Pensada para usarse de pie, en el almacén, con una mano.</p>
-      <div class="grid">
-        <div class="card">
-          <div class="icon">📦</div>
-          <h3>Stock</h3>
-          <p>Cada producto con su cantidad, unidad y mínimo. Botones −/+ grandes, entradas y salidas de cualquier cantidad y aviso de «bajo mínimos».</p>
-        </div>
-        <div class="card">
-          <div class="icon">🚚</div>
-          <h3>Proveedores</h3>
-          <p>Un producto puede venir de varios proveedores: el recuento es uno solo. Con sus productos, teléfono y notas.</p>
-        </div>
-        <div class="card">
-          <div class="icon">★</div>
+    <section id="video" class="wrap">
+      <div class="head" data-reveal>
+        <span class="eyebrow">Vídeo · 2:18</span>
+        <h2>De cero al día a día en <span class="serif grad">dos minutos</span></h2>
+        <p>Una empresa vacía: perfil y logo, categorías, un proveedor con su pedido favorito, el stock diario, un evento y el historial.</p>
+      </div>
+      <div class="video-card" data-reveal>
+        <video controls preload="metadata" playsinline poster="media/stockly-demo-poster.jpg">
+          <source src="media/stockly-demo.mp4" type="video/mp4" />
+          Tu navegador no puede reproducir el vídeo. <a href="media/stockly-demo.mp4">Descárgalo aquí</a>.
+        </video>
+      </div>
+    </section>
+
+    <section id="funciones" class="wrap">
+      <div class="head" data-reveal>
+        <span class="eyebrow">Funciones</span>
+        <h2>Todo lo del almacén, <span class="serif grad">nada de más</span></h2>
+        <p>Pensada para usarse de pie, en el almacén, con una mano. En tablet y escritorio, la misma app con el menú arriba.</p>
+      </div>
+      <div class="features">
+        <article class="card card--big" data-reveal>
+          <div>
+            <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 21 6.5v11L12 22l-9-4.5v-11z"/><path d="M3 6.5 12 11l9-4.5M12 11v11"/></svg></span>
+            <h3>Stock con −/+ grandes</h3>
+            <p>Cantidad, unidad y mínimo de cada producto. Un toque suma o resta; para cantidades grandes, entrada o salida de lo que quieras. Por categorías o por proveedores, lo que está bajo mínimos con un botón y el logo de tu empresa en la cabecera.</p>
+          </div>
+          <div class="mini" aria-hidden="true">
+            <div class="mini-row"><span>Agua mineral 50cl<small>Bebidas · mín. 48</small></span><span class="stepper"><i>−</i><b>72</b><i>+</i></span></div>
+            <div class="mini-row low"><span>Merluza<small>Carnes y pescados · mín. 3</small></span><span class="stepper"><i>−</i><b>1,5</b><i>+</i></span></div>
+            <div class="mini-row"><span>Arroz bomba<small>Despensa · mín. 5</small></span><span class="stepper"><i>−</i><b>8</b><i>+</i></span></div>
+          </div>
+        </article>
+        <article class="card" data-reveal>
+          <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg></span>
           <h3>Pedidos favoritos</h3>
-          <p>Guarda lo que pides siempre. Copia la lista para enviarla por WhatsApp y, al recibirlo, súmalo todo al stock de una vez.</p>
-        </div>
-        <div class="card">
-          <div class="icon">📅</div>
+          <p>Lo que pides siempre, con sus cantidades. Copia la lista para enviarla y, al recibirla, súmala al stock en un paso.</p>
+        </article>
+        <article class="card" data-reveal>
+          <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M1 4h14v12H1zM15 9h4l4 4v3h-8z"/><circle cx="6" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/></svg></span>
+          <h3>Proveedores</h3>
+          <p>Un producto puede venir de varios proveedores: el recuento es uno solo. Con teléfono y notas.</p>
+        </article>
+        <article class="card" data-reveal>
+          <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>
           <h3>Eventos</h3>
-          <p>Apunta el consumo de cada evento y descuéntalo del stock en un paso. Los comensales dan el ratio por persona para los siguientes.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🕑</div>
+          <p>Apunta el consumo y descuéntalo una vez. Si falta stock no descuenta nada; los comensales dan el ratio por persona.</p>
+        </article>
+        <article class="card" data-reveal>
+          <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 6.5V12l3.5 2"/></svg></span>
           <h3>Control</h3>
-          <p>Historial de cada movimiento: quién, cuándo, cuánto y por qué (ajuste, pedido o evento). Los toques seguidos se agrupan en uno.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🏷️</div>
-          <h3>Tu marca</h3>
-          <p>Perfil de la empresa con su logo, que aparece en la cabecera. Funciona en el navegador y como app Android.</p>
+          <p>Cada movimiento con quién, cuándo y por qué: ajuste, pedido, evento, corrección o alta. Lo escribe la base de datos.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="pantallas" class="wrap">
+      <div class="head" data-reveal>
+        <span class="eyebrow">Pantallas</span>
+        <h2>Hecha para el <span class="serif grad">móvil</span>, primero</h2>
+        <p>Botones de 44 px como mínimo, textos a 16 px y respeto por el notch y la barra de gestos. Desliza para ver más.</p>
+      </div>
+      <div class="screens" data-reveal>
+        <div class="shots">
+          <figure><img src="assets/capturas/stock.jpg" alt="Lista de stock con botones −/+" /><figcaption>Stock</figcaption></figure>
+          <figure><img src="assets/capturas/bajo-minimos.jpg" alt="Productos bajo mínimos" /><figcaption>Bajo mínimos</figcaption></figure>
+          <figure><img src="assets/capturas/proveedor.jpg" alt="Ficha de proveedor con pedidos favoritos y productos" /><figcaption>Proveedor</figcaption></figure>
+          <figure><img src="assets/capturas/evento.jpg" alt="Evento descontado con consumo por comensal" /><figcaption>Evento</figcaption></figure>
+          <figure><img src="assets/capturas/control.jpg" alt="Historial de movimientos" /><figcaption>Control</figcaption></figure>
+          <figure><img src="assets/capturas/categorias.jpg" alt="Lista de categorías" /><figcaption>Categorías</figcaption></figure>
         </div>
       </div>
     </section>
 
-    <section>
-      <h2>Así se ve</h2>
-      <p class="sub">Mobile-first: barra inferior en el móvil, barra superior en tablet y escritorio.</p>
-      <div class="shots">
-        <figure><img src="assets/capturas/stock.jpg" alt="Lista de stock con botones −/+" loading="lazy" /><figcaption>Stock</figcaption></figure>
-        <figure><img src="assets/capturas/proveedor.jpg" alt="Ficha de proveedor con pedidos favoritos y productos" loading="lazy" /><figcaption>Proveedor y pedido favorito</figcaption></figure>
-        <figure><img src="assets/capturas/evento.jpg" alt="Evento descontado con consumo por comensal" loading="lazy" /><figcaption>Evento</figcaption></figure>
-        <figure><img src="assets/capturas/control.jpg" alt="Historial de movimientos" loading="lazy" /><figcaption>Control</figcaption></figure>
-        <figure><img src="assets/capturas/bajo-minimos.jpg" alt="Productos bajo mínimos" loading="lazy" /><figcaption>Bajo mínimos</figcaption></figure>
-        <figure><img src="assets/capturas/categorias.jpg" alt="Lista de categorías" loading="lazy" /><figcaption>Categorías</figcaption></figure>
+    <section class="wrap">
+      <div class="head" data-reveal>
+        <span class="eyebrow">El día a día</span>
+        <h2>Se monta en una tarde, <span class="serif grad">se usa cada día</span></h2>
       </div>
-    </section>
-
-    <section>
-      <h2>El día a día</h2>
-      <ol class="flow">
-        <li><strong>Alta</strong>: el administrador crea la empresa y da acceso a cada persona del equipo.</li>
-        <li><strong>Perfil</strong>: nombre, datos fiscales y logo.</li>
-        <li><strong>Catálogo</strong>: categorías, proveedores y productos con su mínimo.</li>
-        <li><strong>Pedidos</strong>: llega la mercancía → «Recibido» y suma al stock.</li>
-        <li><strong>Eventos</strong>: apunta el consumo y descuéntalo.</li>
-        <li><strong>Control</strong>: revisa los movimientos y lo que está bajo mínimos.</li>
+      <ol class="steps">
+        <li data-reveal><h3>Alta</h3><p>El administrador crea la empresa y da acceso a cada persona del equipo.</p></li>
+        <li data-reveal><h3>Perfil</h3><p>Nombre, datos fiscales y logo, que sale en la cabecera.</p></li>
+        <li data-reveal><h3>Catálogo</h3><p>Categorías, proveedores y productos con su mínimo.</p></li>
+        <li data-reveal><h3>Pedidos</h3><p>Llega la mercancía: «Recibido» y se suma todo al stock.</p></li>
+        <li data-reveal><h3>Eventos</h3><p>Apunta el consumo y descuéntalo cuando esté bien.</p></li>
+        <li data-reveal><h3>Control</h3><p>Revisa los movimientos y lo que está bajo mínimos.</p></li>
       </ol>
     </section>
 
-    <section>
-      <h2>Cómo está hecha</h2>
-      <p class="sub">Sin servidor propio: el front habla directamente con Supabase y la lógica sensible vive en la base de datos.</p>
-      <div class="table-wrap">
-        <table>
-          <tr><th>Parte</th><th>Tecnología</th></tr>
-          <tr><td>Front</td><td>Angular 22 (standalone, signals), CSS propio, mobile-first</td></tr>
-          <tr><td>Datos</td><td>Supabase: PostgreSQL + Auth + API REST (supabase-js)</td></tr>
-          <tr><td>Seguridad</td><td>Login + políticas RLS: solo entra el personal autorizado (tabla <code>staff</code>)</td></tr>
-          <tr><td>Lógica</td><td>Funciones atómicas en la BBDD (<code>adjust_stock</code>, <code>receive_order</code>, <code>consume_event</code>) y un trigger que escribe el historial</td></tr>
-          <tr><td>Móvil</td><td>Capacitor (APK Android) sobre el mismo front</td></tr>
-          <tr><td>Vídeo</td><td>Grabado automáticamente con Playwright sobre un entorno demo</td></tr>
-        </table>
+    <section id="tecnica" class="wrap">
+      <div class="head" data-reveal>
+        <span class="eyebrow">Técnica</span>
+        <h2>Sin backend propio, <span class="serif grad">sin atajos</span></h2>
+        <p>El front habla directamente con Supabase. Lo que tiene que ser seguro y consistente vive en PostgreSQL.</p>
+      </div>
+      <div class="tech">
+        <div class="card" data-reveal>
+          <ul class="checks">
+            <li><p><b>Angular 22</b> standalone con signals, CSS propio y mobile-first.</p></li>
+            <li><p><b>Supabase</b>: PostgreSQL, Auth y API REST vía <code>supabase-js</code>.</p></li>
+            <li><p><b>RLS</b>: solo entra el personal de la tabla <code>staff</code>.</p></li>
+            <li><p><b>Funciones atómicas</b>: dos personas tocando el mismo producto no se pisan.</p></li>
+            <li><p><b>Capacitor</b>: APK de Android con el mismo front.</p></li>
+            <li><p><b>Demo y vídeo</b>: modo con datos ficticios en memoria y grabación automática con Playwright.</p></li>
+          </ul>
+        </div>
+        <div class="card" data-reveal>
+          <span class="eyebrow">Un toque en «+»</span>
+          <div class="flow">
+            <div class="node">Móvil<small>Angular · supabase-js</small></div>
+            <div class="link">rpc('adjust_stock')</div>
+            <div class="node node--db">PostgreSQL<small>RLS · función atómica</small></div>
+            <div class="link">trigger</div>
+            <div class="node">Historial<small>agrupa toques de 2 min</small></div>
+          </div>
+          <div class="pills"><code>adjust_stock</code><code>receive_order</code><code>consume_event</code><code>save_favorite_order</code><code>log_stock_movement</code></div>
+        </div>
       </div>
     </section>
 
-    <section id="empezar">
-      <h2>Ponerla en marcha</h2>
-      <ol>
-        <li>Crea un proyecto en <a href="https://supabase.com">Supabase</a> y ejecuta <code>supabase/schema.sql</code> en el SQL Editor (opcional: <code>supabase/seed.sql</code> con datos de ejemplo).</li>
-        <li>Añade el esquema <code>aletes</code> en <em>Settings › Data API › Exposed schemas</em>.</li>
-        <li>Crea los usuarios en <em>Authentication › Users</em> y dales acceso:
-          <pre><code>insert into aletes.staff (email) values ('persona@empresa.com');
-insert into aletes.companies (name) values ('Mi restaurante');</code></pre>
-        </li>
-        <li>Configura el front y arráncalo:
-          <pre><code>cd frontend
-cp src/environments/environment.ts src/environments/environment.local.ts
-# rellena supabaseUrl y supabaseAnonKey (Project Settings › API)
-npm install
-npm start</code></pre>
-        </li>
-        <li>Para el móvil: <code>npm run apk</code> (requiere Android Studio).</li>
-      </ol>
-      <p>Más detalle en el <a href="https://github.com/quiquealonso/stockly#readme">README</a>.</p>
+    <section id="empezar" class="wrap">
+      <div class="head" data-reveal>
+        <span class="eyebrow">Empezar</span>
+        <h2>Tu instalación en <span class="serif grad">cuatro pasos</span></h2>
+        <p>Un proyecto gratuito de Supabase basta. Detalle completo en el <a href="https://github.com/quiquealonso/stockly#readme">README</a>.</p>
+      </div>
+      <div class="setup">
+        <div class="card" data-reveal>
+          <h3>Base de datos</h3>
+          <p>Crea un proyecto en <a href="https://supabase.com">Supabase</a> y ejecuta <code>supabase/schema.sql</code> en el SQL Editor. Opcional: <code>seed.sql</code> con datos de ejemplo.</p>
+        </div>
+        <div class="card" data-reveal>
+          <h3>Esquema</h3>
+          <p>Añade <code>aletes</code> en <em>Settings › Data API › Exposed schemas</em>.</p>
+        </div>
+        <div class="card" data-reveal>
+          <h3>Equipo</h3>
+          <p>Crea los usuarios en <em>Authentication › Users</em> y dales acceso:</p>
+          <div class="term"><pre><code><span class="k">insert into</span> aletes.staff (email)
+  <span class="k">values</span> ('persona@empresa.com');
+<span class="k">insert into</span> aletes.companies (name)
+  <span class="k">values</span> ('Mi restaurante');</code></pre></div>
+        </div>
+        <div class="card" data-reveal>
+          <h3>Front</h3>
+          <p>Configura las claves públicas y arranca:</p>
+          <div class="term"><pre><code><span class="k">cd</span> frontend
+<span class="k">cp</span> src/environments/environment.ts \
+   src/environments/environment.local.ts
+<span class="c"># rellena supabaseUrl y supabaseAnonKey</span>
+<span class="k">npm</span> install &amp;&amp; <span class="k">npm</span> start
+<span class="k">npm</span> run apk   <span class="c"># Android</span></code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="cta" data-reveal>
+        <img src="assets/stockly-logo.svg" alt="" />
+        <h2>Pruébala ahora, <span class="serif">con datos de mentira</span></h2>
+        <p>Toca, recibe pedidos y descuenta eventos. Nada sale de tu navegador y al recargar vuelve a empezar.</p>
+        <div class="actions">
+          <a class="btn btn--primary" href="demo/">Abrir la demo</a>
+          <a class="btn btn--secondary" href="https://github.com/quiquealonso/stockly">Ver el código</a>
+        </div>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <div class="wrap">
-      Stockly · Proyecto de <a href="https://github.com/quiquealonso">@quiquealonso</a>. El vídeo y las capturas usan una empresa y datos ficticios.
+  <footer class="wrap">
+    <div class="foot">
+      <span>Stockly · proyecto de <a href="https://github.com/quiquealonso">@quiquealonso</a></span>
+      <span>Vídeo, capturas y demo con una empresa y datos ficticios</span>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      document.getElementById('theme').addEventListener('click', function () {
+        var t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', t);
+        try { localStorage.setItem('stockly-theme', t); } catch (e) {}
+      });
+
+      // Aparición al hacer scroll
+      var items = document.querySelectorAll('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -8% 0px' });
+        items.forEach(function (el) { io.observe(el); });
+      } else {
+        items.forEach(function (el) { el.classList.add('is-in'); });
+      }
+
+      // En pantallas grandes, el móvil lleva la demo en vivo en lugar de la captura.
+      if (matchMedia('(min-width: 961px)').matches) {
+        var frame = document.createElement('iframe');
+        frame.src = 'demo/';
+        frame.title = 'Demo en vivo de Stockly';
+        frame.loading = 'lazy';
+        document.getElementById('phone-shot').replaceWith(frame);
+        document.getElementById('phone-hint').innerHTML = 'Es la app de verdad: tócala · <a href="demo/">pantalla completa ↗</a>';
+      }
+    })();
+  </script>
 </body>
 </html>

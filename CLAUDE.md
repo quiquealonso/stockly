@@ -71,7 +71,12 @@ Datos de la instalación real (cuentas, cliente, usuarios): `CLAUDE.local.md`, q
 - `video/`: vídeo promocional grabado con Playwright sobre un entorno demo aparte (esquema
   `aletes_demo` regenerable con `video/crear-demo.mjs`, `ng serve --configuration demo` en :4300),
   con una empresa ficticia. Ver `video/README.md`. Nunca grabar sobre el esquema real `aletes`.
-- `docs/`: GitHub Pages (documentación + vídeo).
+- Demo web (`npm run demo` :4500 / `npm run build:demo` → `docs/demo/`): configuración
+  `web-demo` (`environment.web-demo.ts`, sin claves, `demo: true`). `app.config.ts` cambia
+  `ApiService`/`SupabaseService` por `core/demo/demo.services.ts` (datos en memoria de
+  `demo-data.ts`, login con cualquier email) y usa rutas con `#`. Si cambia la API o la UI,
+  actualizar `DemoApiService` (implementa la interfaz pública de `ApiService`) y regenerar.
+- `docs/`: GitHub Pages (web morada, claro por defecto, con la demo en vivo en el móvil del hero + vídeo). Logo: `docs/assets/stockly-logo.svg` (copia en `frontend/public/favicon.svg`; iconos de Android generados desde él).
 
 ## APK (Capacitor 8)
 

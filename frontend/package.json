@@ -7,6 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "demo": "ng serve --configuration web-demo",
+    "build:demo": "ng build --configuration web-demo",
     "apk:sync": "ng build --configuration production && cap sync android",
     "apk:open": "cap open android",
     "apk": "npm run apk:sync && node scripts/build-apk.mjs"

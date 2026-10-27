@@ -10,7 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://quiquealonso.github.io/stockly/"><strong>Documentación y vídeo</strong></a> ·
+  <a href="https://quiquealonso.github.io/stockly/demo/"><strong>Demo en vivo</strong></a> ·
+  <a href="https://quiquealonso.github.io/stockly/"><strong>Web y vídeo</strong></a> ·
   <a href="docs/media/stockly-demo.mp4">Vídeo (MP4)</a> ·
   <a href="#puesta-en-marcha">Puesta en marcha</a>
 </p>
@@ -27,6 +28,9 @@
   <img src="docs/assets/capturas/evento.jpg" width="190" alt="Evento" />
   <img src="docs/assets/capturas/control.jpg" width="190" alt="Control" />
 </p>
+
+> La demo, el vídeo y las capturas usan una empresa y datos **ficticios**. La demo funciona
+> entera en el navegador (sin Supabase): entra con cualquier email y al recargar vuelve a empezar.
 
 ## Qué hace
 
@@ -49,8 +53,9 @@
 | Front | Angular 22 (standalone, signals), CSS propio, mobile-first | `frontend/` |
 | Datos | Supabase: PostgreSQL + Auth + API REST, vía `supabase-js` | `supabase/` |
 | Móvil | Capacitor (APK Android) sobre el mismo front | `frontend/android/` |
+| Demo web | Modo con datos ficticios en memoria (sustituye a Supabase) | `frontend/src/app/core/demo/` |
 | Vídeo | Grabación automática con Playwright sobre un entorno demo | `video/` |
-| Web | GitHub Pages | `docs/` |
+| Web | GitHub Pages (presentación + demo) | `docs/` |
 
 **Sin backend propio**: la lógica que tiene que ser segura vive en la base de datos.
 - **RLS**: solo entra el personal de la tabla `staff`, y `anon` no tiene acceso.
@@ -91,6 +96,14 @@ Detalle funcional y cada caso decidido en [`context.md`](context.md). APK en [`M
    contraseña de la base de datos.
 
 5. **Móvil**: `cd frontend && npm run apk`. Requiere Android Studio; detalles en [`MOVIL.md`](MOVIL.md).
+
+## Demo web
+
+`npm run demo` (en `frontend/`) la sirve en http://localhost:4500 y `npm run build:demo` la
+genera en `docs/demo/`, que es la que publica GitHub Pages. Usa `environment.web-demo.ts`
+(sin claves) y `core/demo/`: `DemoApiService` y `DemoSupabaseService` imitan las reglas de la
+BBDD (historial agrupado, pedidos y eventos atómicos) con los datos de `demo-data.ts`.
+Al cambiar la UI, vuelve a generarla.
 
 ## Vídeo de demostración
 
